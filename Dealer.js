@@ -19,6 +19,7 @@ class Dealer extends React.Component {
     this.onNewHand = this.onNewHand.bind(this)
     this.onPlayerHit = this.onPlayerHit.bind(this)
     this.onPlayerStand = this.onPlayerStand.bind(this)
+    this.onDoubleDown = this.onDoubleDown.bind(this)
   }
 
   componentDidMount() {
@@ -71,21 +72,25 @@ class Dealer extends React.Component {
   }
 
   onPlayerHit() {
-    const { playerCards, playerValue, deck } = this.state
+    const { playerCards, playerValue, deck, result } = this.state
     axios.get(`https://deckofcardsapi.com/api/deck/${deck}/draw/?count=1`)
       .then(res => res.data)
       .then(card => {
         this.setState({
           playerCards: playerCards.concat(card.cards),
-          playerValue: playerValue + this.getCardValue(card.cards[0].value)
+          playerValue: playerValue + this.getCardValue(card.cards[0].value),
         })
       })
+      .then(() => this.setState({ result: this.state.playerValue > 21 ? 'You bust! Dealer wins.' : '' }))
+  }
+
+  onDoubleDown() {
+    this.onPlayerHit()
+    // this.onPlayerStand()
   }
 
   onPlayerStand() {
     const { dealerValue, dealerCards, playerValue, result, deck } = this.state
-    console.log('dealder: ', dealerValue)
-    console.log('player', playerValue)
     if (dealerValue < 16) {
       axios.get(`https://deckofcardsapi.com/api/deck/${deck}/draw/?count=1`)
         .then(res => res.data)
@@ -114,17 +119,16 @@ class Dealer extends React.Component {
   }
 
   render() {
-    const { onStartHand, onNewDeck, onNewHand, onPlayerHit, onPlayerStand } = this
+    const { onStartHand, onNewDeck, onNewHand, onPlayerHit, onPlayerStand, onDoubleDown } = this
     const { dealerCards, dealerValue, playerCards, playerValue, result } = this.state
     /* BUTTON DISABLING */
     const noStartHand = dealerCards.length > 1 && playerCards.length > 1
     const noNewDeck = !dealerCards.length || !playerCards.length
     const noPlayerCards = !playerCards.length
     const playerBust = playerValue > 21
+    // console.log(this.state)
     return (
       <View style={ styles.container }>
-
-        { playerBust && <Text style={ styles.playerBust }>You busted! Dealer wins</Text> }
 
         { result && <Text style={styles.playerBust}>{ result }</Text> }
 
@@ -167,7 +171,10 @@ class Dealer extends React.Component {
 
         <View style={ styles.inline }>
           <Button onPress={ onPlayerHit } disabled={ noPlayerCards || playerBust || !!result } title="Hit" />
-          <Button onPress={ onPlayerStand } disabled={ noPlayerCards || playerBust || !!result } title="Stand" />
+          <Button onPress={ onPlayerStand } disabled={ noPlayerCards || playerBust || !!result }
+          title="Stand" />
+          <Button onPress={ onDoubleDown } disabled={ noPlayerCards || playerBust || !!result }
+          title="Double Down" />
         </View>
       </View>
     )
