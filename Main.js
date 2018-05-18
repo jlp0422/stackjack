@@ -15,7 +15,7 @@ const Main = () => {
 
 const styles = StyleSheet.create({
   container: {
-    height: 600,
+    // height: 600,
   }
 })
 

@@ -1,6 +1,6 @@
 /* eslint-disable */
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View, ScrollView } from 'react-native';
 
 import Header from './Header';
 import Footer from './Footer';
@@ -12,7 +12,9 @@ export default class App extends React.Component {
     return (
       <View style={styles.container}>
         <Header />
-        <Main />
+        <ScrollView>
+          <Main />
+        </ScrollView>
         <Footer />
       </View>
     );
@@ -22,7 +24,7 @@ export default class App extends React.Component {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingTop: 50,
+    paddingTop: 20,
     backgroundColor: '#fff',
     alignItems: 'center',
     // justifyContent: 'center',
