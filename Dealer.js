@@ -9,17 +9,19 @@ class Dealer extends React.Component {
     this.state = {
       dealerCards: [],
       dealerValue: 0,
+      dealerHiddenCard: {},
       playerCards: [],
       playerValue: 0,
       deck: '',
-      result: ''
+      result: '',
+      playerStand: false
     }
     this.onStartHand = this.onStartHand.bind(this)
     this.onNewDeck = this.onNewDeck.bind(this)
-    this.onNewHand = this.onNewHand.bind(this)
     this.onPlayerHit = this.onPlayerHit.bind(this)
     this.onPlayerStand = this.onPlayerStand.bind(this)
     this.onDoubleDown = this.onDoubleDown.bind(this)
+    this.onCheckHands = this.onCheckHands.bind(this)
   }
 
   componentDidMount() {
@@ -35,9 +37,10 @@ class Dealer extends React.Component {
 
   OnDealHand(cards) {
     this.setState({
-      dealerCards: [cards.cards[0], cards.cards[2]],
-      dealerValue: this.getCardValue(cards.cards[0].value) + this.getCardValue(cards.cards[2].value),
-      playerCards: [cards.cards[1], cards.cards[3]],
+      dealerCards: [ cards.cards[2] ],
+      dealerValue: this.getCardValue(cards.cards[2].value),
+      dealerHiddenCard: cards.cards[0],
+      playerCards: [cards.cards[1], cards.cards[3] ],
       playerValue: this.getCardValue(cards.cards[1].value) + this.getCardValue(cards.cards[3].value),
       result: ''
     })
@@ -50,10 +53,12 @@ class Dealer extends React.Component {
       .then(deck => this.setState({
         dealerCards: [],
         dealerValue: 0,
+        dealerHiddenCard: {},
         playerCards: [],
         playerValue: 0,
         deck: deck.deck_id,
-        result: ''
+        result: '',
+        playerStand: false
       }))
   }
 
@@ -61,14 +66,10 @@ class Dealer extends React.Component {
     const { dealerCards, playerCards, deck } = this.state
     axios.get(`https://deckofcardsapi.com/api/deck/${deck}/draw/?count=4`)
       .then(res => res.data)
-      .then(cards => this.OnDealHand(cards))
-  }
-
-  onNewHand() {
-    const { dealerCards, playerCards, deck } = this.state
-    axios.get(`https://deckofcardsapi.com/api/deck/${deck}/draw/?count=4`)
-      .then(res => res.data)
-      .then(cards => this.OnDealHand(cards))
+      .then(cards => {
+        this.setState({playerStand: false })
+        this.OnDealHand(cards)
+      })
   }
 
   onPlayerHit() {
@@ -90,51 +91,72 @@ class Dealer extends React.Component {
   }
 
   onPlayerStand() {
+    const { dealerValue, dealerCards, dealerHiddenCard, playerValue, result, deck } = this.state
+    this.setState({
+      dealerCards: [ this.state.dealerHiddenCard, ...this.state.dealerCards ],
+      dealerValue: this.state.dealerValue + this.getCardValue(this.state.dealerHiddenCard.value),
+      playerStand: true
+    })
+    console.log('ON PLAYER STAND: ',this.state.dealerValue)
+    setTimeout(() => this.onCheckHands(), 1000)
+  }
+
+  onCheckHands() {
     const { dealerValue, dealerCards, playerValue, result, deck } = this.state
+    console.log('BEFORE CHECK HAND: ', this.state.dealerValue)
     if (dealerValue < 16) {
       axios.get(`https://deckofcardsapi.com/api/deck/${deck}/draw/?count=1`)
         .then(res => res.data)
         .then(card => {
+          console.log('ON CHECK HANDS: ',this.state.dealerValue)
           this.setState({
-            dealerCards: dealerCards.concat(card.cards),
-            dealerValue: dealerValue + this.getCardValue(card.cards[0].value)
+            dealerCards: [ ...this.state.dealerCards, card.cards[0]],
+            dealerValue: this.state.dealerValue + this.getCardValue(card.cards[0].value),
           })
         })
-        .then(() => setTimeout(() => this.onPlayerStand(), 1000))
+        .then(() => setTimeout(() => this.onCheckHands(), 1000))
     }
     else if (dealerValue > 21) {
-      return this.setState({ result: `You win! Dealer busted!` })
+      return setTimeout(() => this.setState({ result: `You win! Dealer busted!` }), 1000)
     }
     else {
       if (dealerValue > playerValue) {
-        return this.setState({ result: `Dealer wins with a ${dealerValue}` })
+        return setTimeout(() => this.setState({ result: `Dealer wins with a ${dealerValue}` }), 1000)
       }
       else if (playerValue > dealerValue) {
-        return this.setState({ result: `You win with a ${playerValue}!` })
+        return setTimeout(() => this.setState({ result: `You win with a ${playerValue}!` }), 1000)
       }
       else {
-        return this.setState({ result: 'Push - play again!' })
+        return setTimeout(() => this.setState({ result: 'Push - play again!' }), 1000)
       }
     }
   }
 
   render() {
-    const { onStartHand, onNewDeck, onNewHand, onPlayerHit, onPlayerStand, onDoubleDown } = this
-    const { dealerCards, dealerValue, playerCards, playerValue, result } = this.state
+    const { onStartHand, onNewDeck, onPlayerHit, onPlayerStand, onDoubleDown } = this
+    const { dealerCards, dealerValue, dealerHiddenCard, playerCards, playerValue, result, playerStand } = this.state
     /* BUTTON DISABLING */
     const noStartHand = dealerCards.length > 1 && playerCards.length > 1
     const noNewDeck = !dealerCards.length || !playerCards.length
     const noPlayerCards = !playerCards.length
     const playerBust = playerValue > 21
-    // console.log(this.state)
     return (
       <View style={ styles.container }>
 
         { result && <Text style={styles.playerBust}>{ result }</Text> }
 
-        <Text style={ styles.headline }>Dealer's Cards</Text>
-        <Text style={ styles.headline }>Total: {dealerValue}</Text>
+        <Text style={ styles.headline1 }>Dealer's Cards</Text>
+        <Text style={ styles.headline2 }>Total: {dealerValue}</Text>
         <View style={ styles.inline }>
+          {!playerStand && dealerHiddenCard.image &&
+          <View>
+            <Text></Text>
+            <Image
+              style={styles.image}
+              source={require('./card-back.jpg')}
+            />
+          </View>
+        }
         { dealerCards.length &&
           dealerCards.map(card => (
             <View key={card.code}>
@@ -148,13 +170,13 @@ class Dealer extends React.Component {
         }
         </View>
         <View style={ styles.inline }>
-          <Button disabled={ noStartHand } onPress={ onStartHand } title="Start Hand" />
-          <Button onPress={ onNewHand } title="New Hand" />
-          <Button disabled={ noNewDeck } onPress={onNewDeck} title="New Deck" />
+          <Button disabled={ noStartHand } onPress={ onStartHand } title="Start hand" />
+          <Button onPress={ onStartHand } title={result ? ('Play again') : ('New hand')} />
+          <Button disabled={ noNewDeck } onPress={onNewDeck} title="New deck" />
         </View>
 
-        <Text style={ styles.headline }>Player's Cards</Text>
-        <Text style={styles.headline}>Total: {playerValue}</Text>
+        <Text style={ styles.headline1 }>Player's Cards</Text>
+        <Text style={ styles.headline2 }>Total: {playerValue}</Text>
         <View style={ styles.inline }>
           {playerCards.length &&
             playerCards.map(card => (
@@ -186,15 +208,23 @@ const styles = StyleSheet.create({
     paddingBottom: 50,
     paddingTop: 20
   },
-  headline: {
+  headline1: {
     fontWeight: 'bold',
-    textAlign: 'center'
+    textAlign: 'center',
+    fontSize: 20,
+  },
+  headline2: {
+    fontWeight: 'bold',
+    textAlign: 'center',
+    fontSize: 16,
+    paddingBottom: 10
   },
   playerBust: {
     fontSize: 30,
     fontWeight: 'bold',
     color: 'red',
-    paddingBottom: 10
+    paddingBottom: 10,
+    textAlign: 'center'
   },
   inline: {
     flex: 1,
