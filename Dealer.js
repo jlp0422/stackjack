@@ -93,8 +93,8 @@ class Dealer extends React.Component {
   onPlayerStand() {
     const { dealerValue, dealerCards, dealerHiddenCard, playerValue, result, deck } = this.state
     this.setState({
-      dealerCards: [ this.state.dealerHiddenCard, ...this.state.dealerCards ],
-      dealerValue: this.state.dealerValue + this.getCardValue(this.state.dealerHiddenCard.value),
+      dealerCards: [ dealerHiddenCard, ...dealerCards ],
+      dealerValue: dealerValue + this.getCardValue(dealerHiddenCard.value),
       playerStand: true
     })
     console.log('ON PLAYER STAND: ',this.state.dealerValue)
@@ -104,7 +104,7 @@ class Dealer extends React.Component {
   onCheckHands() {
     const { dealerValue, dealerCards, playerValue, result, deck } = this.state
     console.log('BEFORE CHECK HAND: ', this.state.dealerValue)
-    if (dealerValue < 16) {
+    if (dealerValue <= 16) {
       axios.get(`https://deckofcardsapi.com/api/deck/${deck}/draw/?count=1`)
         .then(res => res.data)
         .then(card => {
