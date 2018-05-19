@@ -2,11 +2,12 @@
 import React from 'react';
 import { StyleSheet, Text, View, ScrollView, Button } from 'react-native';
 import { createStackNavigator } from 'react-navigation';
-import { Provider } from 'react-redux';
+import { Provider, connect } from 'react-redux';
 import store from './store';
 import Header from './components/Header';
 import Footer from './components/Footer';
-import Main from './components/Main';
+import Dealer from './components/Dealer';
+import HintInfo from './components/HintInfo';
 
 class App extends React.Component {
   static navigationOptions = ({ navigation }) => {
@@ -29,7 +30,7 @@ class App extends React.Component {
       <View style={styles.container}>
         {/*<Header />*/}
         <ScrollView>
-          <Main />
+          <Dealer />
         </ScrollView>
         <Footer />
       </View>
@@ -39,16 +40,24 @@ class App extends React.Component {
 }
 
 class Hint extends React.Component {
+  constructor() {
+    super()
+    this.onGoBack = this.onGoBack.bind(this)
+  }
   static navigationOptions = {
     title: 'Hint',
   };
 
+  onGoBack() {
+    this.props.navigation.goBack()
+  }
+
   render() {
+    const { onGoBack } = this
     return (
-      <View style={styles.hint}>
-        <Text style={ styles.text } >Based on the dealer's cards and your cards, you should stay</Text>
-        <Button title="Close" onPress={ () => this.props.navigation.goBack() } />
-      </View>
+      <Provider store={ store }>
+        <HintInfo goBack={ onGoBack } />
+      </Provider>
     )
   }
 }

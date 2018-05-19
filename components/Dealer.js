@@ -79,7 +79,9 @@ class Dealer extends React.Component {
 
   onDoubleDown() {
     this.onPlayerHit()
-    setTimeout(() => this.onPlayerStand(), 1000)
+    setTimeout(() => {
+      if (!this.state.result) this.onPlayerStand()
+    }, 1000)
   }
 
   onPlayerStand() {
@@ -87,7 +89,7 @@ class Dealer extends React.Component {
     setTimeout(() => this.onCheckHands(), 1000)
   }
 
-  onCheckHands() {
+  onCheckHands(double) {
     const { dealerValue, dealerCards, playerValue } = this.props.hand
     const { result, deck } = this.state
     if (dealerValue <= 16) {
