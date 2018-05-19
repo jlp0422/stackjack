@@ -4,7 +4,7 @@ import { View, Text, StyleSheet } from 'react-native'
 const Footer = () => {
   return (
     <View style={ styles.container }>
-      <Text style={ styles.text }>&copy; Jeremy Philipson</Text>
+      <Text style={ styles.text }>&copy; Jeremy Philipson | Fullstack Academy</Text>
     </View>
   )
 }

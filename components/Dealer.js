@@ -4,6 +4,8 @@ import { View, Text, StyleSheet, Image, Button, TouchableHighlight } from 'react
 import axios from 'axios';
 import { connect } from 'react-redux';
 import { dealOneCard, newDeck, newHand, flipCard } from '../store/HandReducer';
+import { getCardValue } from '../store/actionConstants';
+const cardBack = require('../card-back.jpg')
 
 class Dealer extends React.Component {
   constructor(props) {
@@ -12,36 +14,26 @@ class Dealer extends React.Component {
       deck: '',
       result: '',
     }
-
     this.onStartHand = this.onStartHand.bind(this)
     this.onNewDeck = this.onNewDeck.bind(this)
     this.onPlayerHit = this.onPlayerHit.bind(this)
     this.onPlayerStand = this.onPlayerStand.bind(this)
     this.onDoubleDown = this.onDoubleDown.bind(this)
     this.onCheckHands = this.onCheckHands.bind(this)
-    this.onFlipDealerCard = this.onFlipDealerCard.bind(this)
   }
 
   componentWillMount() {
     this.onNewDeck()
   }
 
-  // keep this for dealer flipped card value
-  getCardValue(value) {
-    // right now, counts ACE as 11
-    if (value * 1) return value * 1
-    else if (value === 'ACE') return 11
-    else return 10
-  }
-
   onNewDeck() {
-    // this.props.newDeck()
     axios.get('https://deckofcardsapi.com/api/deck/new/shuffle/?deck_count=6')
-      .then(res => res.data)
-      .then(deck => this.setState({
-        deck: deck.deck_id,
-        result: '',
-      }))
+    .then(res => res.data)
+    .then(deck => this.setState({
+      deck: deck.deck_id,
+      result: '',
+    }))
+    .then(() => this.props.newDeck())
   }
 
   onStartHand() {
@@ -50,7 +42,7 @@ class Dealer extends React.Component {
     this.props.newHand(deck)
       .then(() => {
         const { playerValue, dealerValue, dealerHiddenCard } = this.props.hand
-        const realDealerValue = dealerValue + this.getCardValue(dealerHiddenCard.value)
+        const realDealerValue = dealerValue + getCardValue(dealerHiddenCard.value)
         if (playerValue === 21) {
           return setTimeout(() => {
             this.props.flipCard()
@@ -86,24 +78,12 @@ class Dealer extends React.Component {
   }
 
   onDoubleDown() {
-    const { deck } = this.state
-    this.props.dealOneCard(deck, 'player')
+    this.onPlayerHit()
     setTimeout(() => this.onPlayerStand(), 1000)
   }
 
-  onFlipDealerCard() {
-    this.props.flipCard()
-    const { dealerValue, dealerCards, dealerHiddenCard, playerValue } = this.props.hand
-    const { result, deck } = this.state
-    this.setState({
-      dealerCards: [ dealerHiddenCard, ...dealerCards ],
-      dealerValue: dealerValue + this.getCardValue(dealerHiddenCard.value),
-      playerStand: true
-    })
-  }
-
   onPlayerStand() {
-    this.onFlipDealerCard()
+    this.props.flipCard()
     setTimeout(() => this.onCheckHands(), 1000)
   }
 
@@ -119,10 +99,10 @@ class Dealer extends React.Component {
     }
     else {
       if (dealerValue > playerValue) {
-        return setTimeout(() => this.setState({ result: `Dealer wins with a ${dealerValue}` }), 1000)
+        return setTimeout(() => this.setState({ result: `Dealer wins with ${dealerValue}` }), 1000)
       }
       else if (playerValue > dealerValue) {
-        return setTimeout(() => this.setState({ result: `You win with a ${playerValue}!` }), 1000)
+        return setTimeout(() => this.setState({ result: `You win with ${playerValue}!` }), 1000)
       }
       else {
         return setTimeout(() => this.setState({ result: 'Push - play again!' }), 1000)
@@ -152,7 +132,7 @@ class Dealer extends React.Component {
             <Text></Text>
             <Image
               style={styles.image}
-              source={require('./../card-back.jpg')}
+              source={ cardBack }
             />
           </View>
         }

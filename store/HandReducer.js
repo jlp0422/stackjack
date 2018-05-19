@@ -12,7 +12,7 @@ import {
 
 const addPlayerCard = (card) => ({type: ADD_PLAYER_CARD, card })
 const addDealerCard = (card) => ({type: ADD_DEALER_CARD, card })
-const getNewDeck = (deck) => ({ type: GET_NEW_DECK, deck })
+const getNewDeck = () => ({ type: GET_NEW_DECK })
 const getNewHand = (cards) => ({ type: GET_NEW_HAND, cards })
 const flipDealerCard = () => ({ type: FLIP_DEALER_CARD })
 
@@ -20,7 +20,7 @@ export const newDeck = () => {
   return (dispatch) => {
     return axios.get('https://deckofcardsapi.com/api/deck/new/shuffle/?deck_count=6')
     .then(res => res.data)
-    .then(deck => getNewDeck(deck.deck_id))
+    .then(deck => dispatch(getNewDeck(deck)))
   }
 }
 
@@ -49,12 +49,11 @@ const initialState = {
   dealerHiddenCard: {},
   playerCards: [],
   playerValue: 0,
-  deck: '',
   playerStand: false,
 }
 
 const handReducer = (state = initialState, action) => {
-  console.log('* REDUCER ACTION *', action.cards)
+  console.log('REDUCER ACTION: ', action.type)
   switch(action.type) {
 
     case ADD_PLAYER_CARD:
@@ -95,7 +94,6 @@ const handReducer = (state = initialState, action) => {
         playerValue: getCardValue(action.cards.cards[0].value) + getCardValue(action.cards.cards[2].value),
         playerStand: false
       })
-
   }
   return state
 }
