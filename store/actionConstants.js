@@ -7,7 +7,7 @@ export const PLAYER_WIN = 'PLAYER_WIN';
 export const PLAYER_LOSE = 'PLAYER_LOSE';
 
 export const getCardValue = (value) => {
-  // right now, counts ACE as 11
+  // right now, only counts ACE as 11
   if (value * 1) return value * 1
   else if (value === 'ACE') return 11
   else return 10
