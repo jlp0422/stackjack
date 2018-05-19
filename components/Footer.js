@@ -3,15 +3,15 @@ import { View, Text, StyleSheet } from 'react-native'
 
 const Footer = () => {
   return (
-    <View style={styles.container}>
-      <Text style={styles.text}>&copy; Jeremy Philipson</Text>
+    <View style={ styles.container }>
+      <Text style={ styles.text }>&copy; Jeremy Philipson</Text>
     </View>
   )
 }
 
 const styles = StyleSheet.create({
   container: {
-    height: 20,
+    height: 40,
     backgroundColor: 'black',
     alignItems: 'center',
     justifyContent: 'center',

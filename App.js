@@ -7,18 +7,8 @@ import store from './store';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import Main from './components/Main';
-// import Hint from './components/Hint';
 
 class App extends React.Component {
-  // constructor() {
-  //   super()
-  //   this.onGoToHint = this.onGoToHint.bind(this)
-  // }
-
-  // onGoToHint() {
-  //   this.props.navigation.navigate('Hint')
-  // }
-
   static navigationOptions = ({ navigation }) => {
     const params = navigation.state.params || {};
     return {
@@ -33,7 +23,6 @@ class App extends React.Component {
   }
 
   render() {
-    // const { onGoToHint } = this
     console.log('***** TIME FOR STACKJACK ******')
     return (
       <Provider store={ store }>
@@ -66,19 +55,13 @@ class Hint extends React.Component {
 
 const MainStack = createStackNavigator(
   {
-    Home: {
-      screen: App,
-    },
-    // Hint: {
-    //   screen: Hint,
-    //   mode: 'modal'
-    // }
+    Home: { screen: App },
   },
   {
     initialRouteName: 'Home',
     navigationOptions: {
       title: 'StackJack',
-      headerStyle: { backgroundColor: 'green' },
+      headerStyle: { backgroundColor: '#128632' },
       headerTintColor: '#fff',
       headerTitleStyle: { fontWeight: 'bold', },
     }
@@ -87,12 +70,8 @@ const MainStack = createStackNavigator(
 
 const RootStack = createStackNavigator(
   {
-    Main: {
-      screen: MainStack
-    },
-    Hint: {
-      screen: Hint
-    }
+    Main: { screen: MainStack },
+    Hint: { screen: Hint }
   },
   {
     mode: 'modal',

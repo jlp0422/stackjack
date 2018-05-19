@@ -43,7 +43,7 @@ class Dealer extends React.Component {
       dealerCards: [ cards.cards[3] ],
       dealerValue: this.getCardValue(cards.cards[3].value),
       dealerHiddenCard: cards.cards[1],
-      playerCards: [cards.cards[0], cards.cards[2] ],
+      playerCards: [ cards.cards[0], cards.cards[2] ],
       playerValue: this.getCardValue(cards.cards[0].value) + this.getCardValue(cards.cards[2].value),
       result: ''
     })
@@ -70,7 +70,7 @@ class Dealer extends React.Component {
     axios.get(`https://deckofcardsapi.com/api/deck/${deck}/draw/?count=4`)
       .then(res => res.data)
       .then(cards => {
-        this.setState({playerStand: false })
+        this.setState({ playerStand: false })
         this.OnDealHand(cards)
       })
       .then(() => {
@@ -199,8 +199,8 @@ class Dealer extends React.Component {
         </View>
         <View style={ styles.inline }>
           <Button disabled={ noStartHand } onPress={ onStartHand } title="Start hand" />
-          <Button onPress={ onStartHand } title={result ? ('Play again') : ('New hand')} />
-          <Button disabled={ noNewDeck } onPress={onNewDeck} title="New deck" />
+          <Button disabled={ noNewDeck } onPress={ onStartHand } title={ result ? ('Play again') : ('New hand') } />
+          <Button disabled={ noNewDeck } onPress={ onNewDeck } title="New deck" />
         </View>
 
         <Text style={ styles.headline1 }>Player's Cards</Text>
