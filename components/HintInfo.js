@@ -5,7 +5,6 @@ import { connect } from 'react-redux';
 import { getHint } from '../probability';
 
 const HintInfo = ({ dealerValue, playerValue, playerStand, goBack }) => {
-  console.log(playerStand)
   if (playerValue && dealerValue && !playerStand) {
     return (
       <View style={styles.hint}>
@@ -16,7 +15,7 @@ const HintInfo = ({ dealerValue, playerValue, playerStand, goBack }) => {
       </View>
     )
   }
-  else if (playerValue && dealerVaue && playerStand) {
+  else if (playerStand) {
     return (
       <View style={styles.hint}>
         <Text style={styles.odds}>Start a new hand to get a hint!</Text>
@@ -46,7 +45,7 @@ const styles = StyleSheet.create({
   text: {
     textAlign: 'center',
     fontSize: 30,
-    paddingBottom: 5
+    paddingBottom: 10
   },
   odds: {
     fontSize: 30,

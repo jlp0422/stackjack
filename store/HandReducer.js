@@ -8,6 +8,8 @@ import {
   GET_NEW_HAND,
   CHECK_HANDS,
   FLIP_DEALER_CARD,
+  PLAYER_WIN,
+  PLAYER_LOSE,
   getCardValue } from './actionConstants';
 
 const addPlayerCard = (card) => ({type: ADD_PLAYER_CARD, card })
@@ -15,6 +17,8 @@ const addDealerCard = (card) => ({type: ADD_DEALER_CARD, card })
 const getNewDeck = () => ({ type: GET_NEW_DECK })
 const getNewHand = (cards) => ({ type: GET_NEW_HAND, cards })
 const flipDealerCard = () => ({ type: FLIP_DEALER_CARD })
+const winningHand = (stake) => ({ type: PLAYER_WIN, stake })
+const losingHand = (stake) => ({ type: PLAYER_LOSE, stake})
 
 export const newDeck = () => {
   return (dispatch) => {
@@ -43,6 +47,9 @@ export const dealOneCard = (deck, player) => {
 
 export const flipCard = () => flipDealerCard()
 
+export const playerWin = (stake) => winningHand(stake)
+export const playerLose = (stake) => losingHand(stake)
+
 const initialState = {
   dealerCards: [],
   dealerValue: 0,
@@ -50,6 +57,7 @@ const initialState = {
   playerCards: [],
   playerValue: 0,
   playerStand: false,
+  playerBankroll: 25
 }
 
 const handReducer = (state = initialState, action) => {
@@ -93,6 +101,16 @@ const handReducer = (state = initialState, action) => {
         playerCards: [ action.cards.cards[0], action.cards.cards[2] ],
         playerValue: getCardValue(action.cards.cards[0].value) + getCardValue(action.cards.cards[2].value),
         playerStand: false
+      })
+
+    case PLAYER_WIN:
+      return Object.assign({}, state, {
+        playerBankroll: state.playerBankroll + action.stake
+      })
+
+    case PLAYER_LOSE:
+      return Object.assign({}, state, {
+        playerBankroll: state.playerBankroll - action.stake
       })
   }
   return state

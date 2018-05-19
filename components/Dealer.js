@@ -1,9 +1,9 @@
 /* eslint-disable */
 import React from 'react';
-import { View, Text, StyleSheet, Image, Button, TouchableHighlight } from 'react-native';
+import { View, Text, StyleSheet, Image, Button, TextInput, TouchableWithoutFeedback } from 'react-native';
 import axios from 'axios';
 import { connect } from 'react-redux';
-import { dealOneCard, newDeck, newHand, flipCard } from '../store/HandReducer';
+import { dealOneCard, newDeck, newHand, flipCard, playerWin, playerLose } from '../store/HandReducer';
 import { getCardValue } from '../store/actionConstants';
 const cardBack = require('../card-back.jpg')
 
@@ -13,6 +13,7 @@ class Dealer extends React.Component {
     this.state = {
       deck: '',
       result: '',
+      wager: 0
     }
     this.onStartHand = this.onStartHand.bind(this)
     this.onNewDeck = this.onNewDeck.bind(this)
@@ -20,10 +21,36 @@ class Dealer extends React.Component {
     this.onPlayerStand = this.onPlayerStand.bind(this)
     this.onDoubleDown = this.onDoubleDown.bind(this)
     this.onCheckHands = this.onCheckHands.bind(this)
+    this.onWagerChange = this.onWagerChange.bind(this)
+    this.onPlayerWin = this.onPlayerWin.bind(this)
+    this.onPlayerLose = this.onPlayerLose.bind(this)
   }
 
   componentWillMount() {
     this.onNewDeck()
+  }
+
+  onWagerChange(stakeType) {
+    let { wager } = this.state
+    const { playerBankroll } = this.props.hand
+    if (stakeType === 'increase') {
+      if (wager * 1 === playerBankroll * 1 ) return
+      else this.setState({ wager: wager + 1 })
+    }
+    else if (stakeType === 'decrease') {
+      if (wager === 0) return
+      else this.setState({ wager: wager - 1 })
+    }
+  }
+
+  onPlayerWin() {
+    const { wager } = this.state
+    this.props.playerWin(wager)
+  }
+
+  onPlayerLose() {
+    const { wager } = this.state
+    this.props.playerLose(wager)
   }
 
   onNewDeck() {
@@ -37,31 +64,37 @@ class Dealer extends React.Component {
   }
 
   onStartHand() {
-    const { deck } = this.state
-    this.setState({ result: '' })
-    this.props.newHand(deck)
-      .then(() => {
-        const { playerValue, dealerValue, dealerHiddenCard } = this.props.hand
-        const realDealerValue = dealerValue + getCardValue(dealerHiddenCard.value)
-        if (playerValue === 21) {
-          return setTimeout(() => {
-            this.props.flipCard()
-            this.setState({ result: `You win with StackJack!` })
-          }, 1000)
-        }
-        else if (realDealerValue === 21) {
-          return setTimeout(() => {
-            this.props.flipCard()
-            this.setState({ result: `Dealer has StackJack` })
-          }, 1000)
-        }
-        else if (playerValue === 21 && realDealerValue === 21 ) {
-          return setTimeout(() => {
-            this.props.flipCard()
-            this.setState({ result: `Push - play again!` })
-          }, 1000)
-        }
-      })
+    const { deck, wager } = this.state
+    const { playerBankroll } = this.props.hand
+    if (wager > playerBankroll) return alert(`You can't fund that bet!`)
+    else {
+      this.setState({ result: '' })
+      this.props.newHand(deck)
+        .then(() => {
+          const { playerValue, dealerValue, dealerHiddenCard } = this.props.hand
+          const realDealerValue = dealerValue + getCardValue(dealerHiddenCard.value)
+          if (playerValue === 21) {
+            return setTimeout(() => {
+              this.props.flipCard()
+              this.setState({ result: `You win with StackJack!` })
+              this.onPlayerWin()
+            }, 1000)
+          }
+          else if (realDealerValue === 21) {
+            return setTimeout(() => {
+              this.props.flipCard()
+              this.setState({ result: `Dealer has StackJack` })
+              this.onPlayerLose()
+            }, 1000)
+          }
+          else if (playerValue === 21 && realDealerValue === 21 ) {
+            return setTimeout(() => {
+              this.props.flipCard()
+              this.setState({ result: `Push - play again!` })
+            }, 1000)
+          }
+        })
+      }
   }
 
   onPlayerHit() {
@@ -73,15 +106,22 @@ class Dealer extends React.Component {
         if (playerValue > 21) {
           this.props.flipCard()
           this.setState({ result: 'You busted! Dealer wins.' })
+          this.onPlayerLose()
         }
       })
   }
 
   onDoubleDown() {
-    this.onPlayerHit()
-    setTimeout(() => {
-      if (!this.state.result) this.onPlayerStand()
-    }, 1000)
+    const { wager } = this.state
+    const { playerBankroll } = this.props.hand
+    if (wager * 2 > playerBankroll) return alert(`You dont have enough money to Double Down!`)
+    else {
+      this.setState({ wager: wager * 2 })
+      setTimeout(() => this.onPlayerHit(), 200)
+      setTimeout(() => {
+        if (!this.state.result) this.onPlayerStand()
+      }, 1000)
+    }
   }
 
   onPlayerStand() {
@@ -94,33 +134,45 @@ class Dealer extends React.Component {
     const { result, deck } = this.state
     if (dealerValue <= 16) {
       this.props.dealOneCard(deck, 'dealer')
-        .then(() => setTimeout(() => this.onCheckHands(), 1000))
+        .then(() => setTimeout(() => this.onCheckHands(), 500))
     }
     else if (dealerValue > 21) {
-      return setTimeout(() => this.setState({ result: `You win! Dealer busts!` }), 1000)
+      return setTimeout(() => {
+        this.setState({ result: `You win! Dealer busts!` })
+        this.onPlayerWin()
+      }, 500)
     }
     else {
       if (dealerValue > playerValue) {
-        return setTimeout(() => this.setState({ result: `Dealer wins with ${dealerValue}` }), 1000)
+        return setTimeout(() => {
+          this.setState({ result: `Dealer wins with ${dealerValue}` })
+          this.onPlayerLose()
+        }, 500)
       }
       else if (playerValue > dealerValue) {
-        return setTimeout(() => this.setState({ result: `You win with ${playerValue}!` }), 1000)
+        return setTimeout(() => {
+          this.setState({ result: `You win with ${playerValue}!` })
+          this.onPlayerWin()
+        }, 500)
       }
       else {
-        return setTimeout(() => this.setState({ result: 'Push - play again!' }), 1000)
+        return setTimeout(() => this.setState({ result: 'Push - play again!' }), 500)
       }
     }
   }
 
   render() {
-    const { onStartHand, onNewDeck, onPlayerHit, onPlayerStand, onDoubleDown } = this
-    const { dealerCards, dealerValue, dealerHiddenCard, playerCards, playerValue, playerStand } = this.props.hand
-    const { result } = this.state
+    const { onStartHand, onNewDeck, onPlayerHit, onPlayerStand, onDoubleDown, onWagerChange } = this
+    const { dealerCards, dealerValue, dealerHiddenCard, playerCards, playerValue, playerStand, playerBankroll } = this.props.hand
+    const { result, wager } = this.state
     /* BUTTON DISABLING */
     const noStartHand = playerCards.length > 1
     const noNewDeck = !dealerCards.length || !playerCards.length
     const noPlayerCards = !playerCards.length
     const playerBust = playerValue > 21
+    const noBet = playerCards.length > 1 && !result
+    console.log('bankroll: ', playerBankroll)
+    console.log('wager: ', wager)
     return (
       <View style={ styles.container }>
 
@@ -166,11 +218,35 @@ class Dealer extends React.Component {
 
         <View style={ styles.inline }>
           <Button onPress={ onPlayerHit } disabled={ noPlayerCards || playerBust || !!result } title="Hit" />
-          <Button onPress={ onPlayerStand } disabled={ noPlayerCards || playerBust || !!result }
-          title="Stand" />
-          <Button onPress={ onDoubleDown } disabled={ noPlayerCards || playerBust || !!result }
-        title="Double Down" />
+          <Button onPress={ onPlayerStand } disabled={ noPlayerCards || playerBust || !!result } title="Stand" />
+          <Button onPress={ onDoubleDown } disabled={ noPlayerCards || playerBust || !!result } title="Double Down" />
         </View>
+        <View style={ styles.inline }>
+          <Text style={ styles.headline1 }>Wager:</Text>
+          <TouchableWithoutFeedback disabled={ noBet } onPress={() => onWagerChange('decrease')}>
+            <View><Text style={{
+              fontWeight: 'bold',
+              textAlign: 'center',
+              fontSize: 25,
+              color: noBet ? 'gray' : 'black',
+            }}>-</Text></View>
+          </TouchableWithoutFeedback>
+          <Text style={{
+            fontWeight: 'bold',
+            textAlign: 'center',
+            fontSize: 20,
+            color: noBet ? 'gray' : 'black',
+            }}>{wager}</Text>
+          <TouchableWithoutFeedback disabled={ noBet } onPress={() => onWagerChange('increase')}>
+            <View><Text style={{
+              fontWeight: 'bold',
+              textAlign: 'center',
+              fontSize: 25,
+              color: noBet ? 'gray' : 'black',
+            }}>+</Text></View>
+          </TouchableWithoutFeedback>
+        </View>
+        <Text style={ styles.headline2 }>My Bankroll: {playerBankroll}</Text>
       </View>
     )
   }
@@ -223,7 +299,9 @@ const mapDispatch = (dispatch) => {
     dealOneCard: (deck, player) => dispatch(dealOneCard(deck, player)),
     newDeck: () => dispatch(newDeck()),
     newHand: (deck) => dispatch(newHand(deck)),
-    flipCard: () => dispatch(flipCard())
+    flipCard: () => dispatch(flipCard()),
+    playerWin: (stake) => dispatch(playerWin(stake)),
+    playerLose: (stake) => dispatch(playerLose(stake))
   }
 }
 
