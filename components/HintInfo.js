@@ -8,7 +8,7 @@ const HintInfo = ({ dealerValue, playerValue, playerStand, goBack }) => {
   if (playerValue && dealerValue && !playerStand) {
     return (
       <View style={styles.hint}>
-        <Text style={ styles.text }>Dealer has: {dealerValue}</Text>
+        <Text style={ styles.text }>Dealer showing: {dealerValue}</Text>
         <Text style={ styles.text }>You have: {playerValue}</Text>
         <Text style={styles.odds}>Odds say: { getHint(playerValue, dealerValue) }</Text>
         <Button title="Close" onPress={ goBack } />

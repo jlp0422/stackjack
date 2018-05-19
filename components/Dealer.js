@@ -224,29 +224,49 @@ class Dealer extends React.Component {
         <View style={ styles.inline }>
           <Text style={ styles.headline1 }>Wager:</Text>
           <TouchableWithoutFeedback disabled={ noBet } onPress={() => onWagerChange('decrease')}>
-            <View><Text style={{
-              fontWeight: 'bold',
-              textAlign: 'center',
-              fontSize: 25,
-              color: noBet ? 'gray' : 'black',
-            }}>-</Text></View>
+            <View>
+              <Text style={{
+                fontWeight: 'bold',
+                textAlign: 'center',
+                fontSize: 20,
+                color: noBet ? 'gray' : 'black',
+                borderColor: noBet ? 'gray' : 'black',
+                borderStyle: 'solid',
+                borderWidth: 2,
+                paddingTop: 5,
+                paddingBottom: 5,
+                paddingRight: 10,
+                paddingLeft: 10,
+                borderRadius: 10,
+              }}>&#x2D;</Text>
+            </View>
           </TouchableWithoutFeedback>
           <Text style={{
             fontWeight: 'bold',
             textAlign: 'center',
             fontSize: 20,
             color: noBet ? 'gray' : 'black',
-            }}>{wager}</Text>
+            }}>${wager}</Text>
           <TouchableWithoutFeedback disabled={ noBet } onPress={() => onWagerChange('increase')}>
-            <View><Text style={{
-              fontWeight: 'bold',
-              textAlign: 'center',
-              fontSize: 25,
-              color: noBet ? 'gray' : 'black',
-            }}>+</Text></View>
+            <View>
+              <Text style={{
+                fontWeight: 'bold',
+                textAlign: 'center',
+                fontSize: 20,
+                color: noBet ? 'gray' : 'black',
+                borderColor: noBet ? 'gray' : 'black',
+                borderStyle: 'solid',
+                borderWidth: 2,
+                paddingTop: 5,
+                paddingBottom: 5,
+                paddingRight: 10,
+                paddingLeft: 10,
+                borderRadius: 10,
+              }}>&#x2B;</Text>
+            </View>
           </TouchableWithoutFeedback>
         </View>
-        <Text style={ styles.headline2 }>My Bankroll: {playerBankroll}</Text>
+        <Text style={ styles.headline2 }>My Bankroll: ${playerBankroll}</Text>
       </View>
     )
   }
