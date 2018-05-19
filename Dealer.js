@@ -109,18 +109,18 @@ class Dealer extends React.Component {
           playerValue: playerValue + this.getCardValue(card.cards[0].value),
         })
       })
-      .then(() => this.setState({ result: this.state.playerValue > 21 ? 'You bust! Dealer wins.' : '' }))
+      .then(() => this.setState({ result: this.state.playerValue > 21 ? 'You busted! Dealer wins.' : '' }))
   }
 
   onDoubleDown() {
     this.onPlayerHit()
-    // this.onPlayerStand()
+    setTimeout(() => this.onPlayerStand(), 1000)
   }
 
   onFlipDealerCard() {
     const { dealerValue, dealerCards, dealerHiddenCard, playerValue, result, deck } = this.state
     this.setState({
-      dealerCards: [dealerHiddenCard, ...dealerCards],
+      dealerCards: [ dealerHiddenCard, ...dealerCards ],
       dealerValue: dealerValue + this.getCardValue(dealerHiddenCard.value),
       playerStand: true
     })
@@ -145,7 +145,7 @@ class Dealer extends React.Component {
         .then(() => setTimeout(() => this.onCheckHands(), 1000))
     }
     else if (dealerValue > 21) {
-      return setTimeout(() => this.setState({ result: `You win! Dealer busted!` }), 1000)
+      return setTimeout(() => this.setState({ result: `You win! Dealer busts!` }), 1000)
     }
     else {
       if (dealerValue > playerValue) {
@@ -223,8 +223,8 @@ class Dealer extends React.Component {
           <Button onPress={ onPlayerHit } disabled={ noPlayerCards || playerBust || !!result } title="Hit" />
           <Button onPress={ onPlayerStand } disabled={ noPlayerCards || playerBust || !!result }
           title="Stand" />
-          {/*<Button onPress={ onDoubleDown } disabled={ noPlayerCards || playerBust || !!result }
-        title="Double Down" />*/}
+          <Button onPress={ onDoubleDown } disabled={ noPlayerCards || playerBust || !!result }
+        title="Double Down" />}
         </View>
       </View>
     )
