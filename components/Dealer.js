@@ -152,7 +152,7 @@ class Dealer extends React.Component {
           <Button disabled={ noNewDeck } onPress={ onNewDeck } title="New deck" />
         </View>
 
-        <Text style={ styles.headline1 }>Player's Cards</Text>
+        <Text style={ styles.headline1 }>Your Cards</Text>
         <Text style={ styles.headline2 }>Total: {playerValue}</Text>
         <View style={ styles.inline }>
           {playerCards.length &&
