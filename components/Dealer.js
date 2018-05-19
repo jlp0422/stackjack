@@ -1,23 +1,18 @@
 /* eslint-disable */
 import React from 'react';
-import { View, Text, StyleSheet, Image, Button } from 'react-native';
+import { View, Text, StyleSheet, Image, Button, TouchableHighlight } from 'react-native';
 import axios from 'axios';
-import { getOneCardFromServer } from '../store/NextCard';
-import { connect } from 'react-redux'
+import { connect } from 'react-redux';
+import { dealOneCard, newDeck, newHand, flipCard } from '../store/HandReducer';
 
 class Dealer extends React.Component {
-  constructor() {
-    super()
+  constructor(props) {
+    super(props)
     this.state = {
-      dealerCards: [],
-      dealerValue: 0,
-      dealerHiddenCard: {},
-      playerCards: [],
-      playerValue: 0,
       deck: '',
       result: '',
-      playerStand: false
     }
+
     this.onStartHand = this.onStartHand.bind(this)
     this.onNewDeck = this.onNewDeck.bind(this)
     this.onPlayerHit = this.onPlayerHit.bind(this)
@@ -27,10 +22,11 @@ class Dealer extends React.Component {
     this.onFlipDealerCard = this.onFlipDealerCard.bind(this)
   }
 
-  componentDidMount() {
+  componentWillMount() {
     this.onNewDeck()
   }
 
+  // keep this for dealer flipped card value
   getCardValue(value) {
     // right now, counts ACE as 11
     if (value * 1) return value * 1
@@ -38,61 +34,38 @@ class Dealer extends React.Component {
     else return 10
   }
 
-  OnDealHand(cards) {
-    this.setState({
-      dealerCards: [ cards.cards[3] ],
-      dealerValue: this.getCardValue(cards.cards[3].value),
-      dealerHiddenCard: cards.cards[1],
-      playerCards: [ cards.cards[0], cards.cards[2] ],
-      playerValue: this.getCardValue(cards.cards[0].value) + this.getCardValue(cards.cards[2].value),
-      result: ''
-    })
-  }
-
   onNewDeck() {
-    const { deck } = this.state
+    // this.props.newDeck()
     axios.get('https://deckofcardsapi.com/api/deck/new/shuffle/?deck_count=6')
       .then(res => res.data)
       .then(deck => this.setState({
-        dealerCards: [],
-        dealerValue: 0,
-        dealerHiddenCard: {},
-        playerCards: [],
-        playerValue: 0,
         deck: deck.deck_id,
         result: '',
-        playerStand: false
       }))
   }
 
   onStartHand() {
-    const { dealerCards, playerCards, deck } = this.state
-    axios.get(`https://deckofcardsapi.com/api/deck/${deck}/draw/?count=4`)
-      .then(res => res.data)
-      .then(cards => {
-        this.setState({ playerStand: false })
-        this.OnDealHand(cards)
-      })
+    const { deck } = this.state
+    this.setState({ result: '' })
+    this.props.newHand(deck)
       .then(() => {
-        const { playerValue, dealerValue, dealerHiddenCard } = this.state
+        const { playerValue, dealerValue, dealerHiddenCard } = this.props.hand
         const realDealerValue = dealerValue + this.getCardValue(dealerHiddenCard.value)
-        console.log('dealer cards: ', realDealerValue)
-        console.log('player cards: ', playerValue)
         if (playerValue === 21) {
           return setTimeout(() => {
-            this.onFlipDealerCard()
-            this.setState({ result: `You win with Stackjack!` })
+            this.props.flipCard()
+            this.setState({ result: `You win with StackJack!` })
           }, 1000)
         }
         else if (realDealerValue === 21) {
           return setTimeout(() => {
-            this.onFlipDealerCard()
-            this.setState({ result: `Dealer has Blackjack` })
+            this.props.flipCard()
+            this.setState({ result: `Dealer has StackJack` })
           }, 1000)
         }
         else if (playerValue === 21 && realDealerValue === 21 ) {
           return setTimeout(() => {
-            this.onFlipDealerCard()
+            this.props.flipCard()
             this.setState({ result: `Push - play again!` })
           }, 1000)
         }
@@ -100,25 +73,28 @@ class Dealer extends React.Component {
   }
 
   onPlayerHit() {
-    const { playerCards, playerValue, deck, result } = this.state
-    axios.get(`https://deckofcardsapi.com/api/deck/${deck}/draw/?count=1`)
-      .then(res => res.data)
-      .then(card => {
-        this.setState({
-          playerCards: playerCards.concat(card.cards),
-          playerValue: playerValue + this.getCardValue(card.cards[0].value),
-        })
+    const { playerCards, playerValue } = this.props.hand
+    const { deck, result } = this.state
+    this.props.dealOneCard(deck, 'player')
+      .then(() => {
+        const { playerValue } = this.props.hand
+        if (playerValue > 21) {
+          this.props.flipCard()
+          this.setState({ result: 'You busted! Dealer wins.' })
+        }
       })
-      .then(() => this.setState({ result: this.state.playerValue > 21 ? 'You busted! Dealer wins.' : '' }))
   }
 
   onDoubleDown() {
-    this.onPlayerHit()
+    const { deck } = this.state
+    this.props.dealOneCard(deck, 'player')
     setTimeout(() => this.onPlayerStand(), 1000)
   }
 
   onFlipDealerCard() {
-    const { dealerValue, dealerCards, dealerHiddenCard, playerValue, result, deck } = this.state
+    this.props.flipCard()
+    const { dealerValue, dealerCards, dealerHiddenCard, playerValue } = this.props.hand
+    const { result, deck } = this.state
     this.setState({
       dealerCards: [ dealerHiddenCard, ...dealerCards ],
       dealerValue: dealerValue + this.getCardValue(dealerHiddenCard.value),
@@ -132,16 +108,10 @@ class Dealer extends React.Component {
   }
 
   onCheckHands() {
-    const { dealerValue, dealerCards, playerValue, result, deck } = this.state
+    const { dealerValue, dealerCards, playerValue } = this.props.hand
+    const { result, deck } = this.state
     if (dealerValue <= 16) {
-      axios.get(`https://deckofcardsapi.com/api/deck/${deck}/draw/?count=1`)
-        .then(res => res.data)
-        .then(card => {
-          this.setState({
-            dealerCards: [ ...this.state.dealerCards, card.cards[0]],
-            dealerValue: this.state.dealerValue + this.getCardValue(card.cards[0].value),
-          })
-        })
+      this.props.dealOneCard(deck, 'dealer')
         .then(() => setTimeout(() => this.onCheckHands(), 1000))
     }
     else if (dealerValue > 21) {
@@ -162,7 +132,8 @@ class Dealer extends React.Component {
 
   render() {
     const { onStartHand, onNewDeck, onPlayerHit, onPlayerStand, onDoubleDown } = this
-    const { dealerCards, dealerValue, dealerHiddenCard, playerCards, playerValue, result, playerStand } = this.state
+    const { dealerCards, dealerValue, dealerHiddenCard, playerCards, playerValue, playerStand } = this.props.hand
+    const { result } = this.state
     /* BUTTON DISABLING */
     const noStartHand = playerCards.length > 1
     const noNewDeck = !dealerCards.length || !playerCards.length
@@ -186,19 +157,15 @@ class Dealer extends React.Component {
           </View>
         }
         { dealerCards.length &&
-          dealerCards.map(card => (
-            <View key={card.code}>
-              <Text>{`${card.value} OF ${card.suit}`}</Text>
-              <Image
-                style={ styles.image }
-                source={{ uri: `${card.image}` }}
-              />
+          dealerCards.map((card, index) => (
+            <View style={{ alignSelf: 'center' }} key={index}>
+              <Image style={ styles.image } source={{ uri: `${card.image}` }} />
             </View>
           ))
         }
         </View>
         <View style={ styles.inline }>
-          <Button disabled={ noStartHand } onPress={ onStartHand } title="Start hand" />
+          <Button disabled={ noStartHand } onPress={ onStartHand } title="Start hand">Start hand</Button>
           <Button disabled={ noNewDeck } onPress={ onStartHand } title={ result ? ('Play again') : ('New hand') } />
           <Button disabled={ noNewDeck } onPress={ onNewDeck } title="New deck" />
         </View>
@@ -207,13 +174,9 @@ class Dealer extends React.Component {
         <Text style={ styles.headline2 }>Total: {playerValue}</Text>
         <View style={ styles.inline }>
           {playerCards.length &&
-            playerCards.map(card => (
-              <View style={{ alignSelf: 'center' }} key={card.code}>
-                <Text>{`${card.value} OF ${card.suit}`}</Text>
-                <Image
-                  style={ styles.image }
-                  source={{ uri: `${card.image}` }}
-                />
+            playerCards.map((card, index) => (
+              <View style={{ alignSelf: 'center' }} key={index}>
+                <Image style={ styles.image } source={{ uri: `${card.image}` }} />
               </View>
             ))
           }
@@ -262,20 +225,23 @@ const styles = StyleSheet.create({
     paddingBottom: 15
   },
   image: {
-    width: 50,
-    height: 70,
+    width: 55,
+    height: 77,
     alignSelf: 'center'
   }
 })
 
 
-const mapState = ({ nextCard }) => {
-  return { nextCard }
+const mapState = ({ hand }) => {
+  return { hand }
 }
 
 const mapDispatch = (dispatch) => {
   return {
-    getNextCard: () => dispatch(getOneCardFromServer())
+    dealOneCard: (deck, player) => dispatch(dealOneCard(deck, player)),
+    newDeck: () => dispatch(newDeck()),
+    newHand: (deck) => dispatch(newHand(deck)),
+    flipCard: () => dispatch(flipCard())
   }
 }
 

@@ -1,9 +1,9 @@
 import { createStore, combineReducers, applyMiddleware } from 'redux';
 import thunk from 'redux-thunk';
-import nextCardReducer from './NextCard';
+import handReducer from './HandReducer';
 
 const reducer = combineReducers({
-  nextCard: nextCardReducer
+  hand: handReducer
 })
 
 const store = createStore(reducer, applyMiddleware(thunk));
