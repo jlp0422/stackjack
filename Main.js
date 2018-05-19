@@ -1,12 +1,12 @@
 /* eslint-disable */
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-
-import Dealer from './Dealer'
+import { connect } from 'react-redux';
+import Dealer from './Dealer';
 
 const Main = () => {
   return (
-    <View style={ styles.container }>
+    <View>
       <Dealer />
     </View>
   )

@@ -1,6 +1,8 @@
 /* eslint-disable */
 import React from 'react';
 import { StyleSheet, Text, View, ScrollView } from 'react-native';
+import { Provider } from 'react-redux';
+import store from './store'
 
 import Header from './Header';
 import Footer from './Footer';
@@ -10,6 +12,7 @@ export default class App extends React.Component {
   render() {
     console.log('***** TIME FOR STACKJACK ******')
     return (
+      <Provider store={ store }>
       <View style={styles.container}>
         <Header />
         <ScrollView>
@@ -17,6 +20,7 @@ export default class App extends React.Component {
         </ScrollView>
         <Footer />
       </View>
+      </Provider>
     );
   }
 }

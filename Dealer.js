@@ -1,7 +1,9 @@
 /* eslint-disable */
 import React from 'react';
 import { View, Text, StyleSheet, Image, Button } from 'react-native';
-import axios from 'axios'
+import axios from 'axios';
+import { getOneCardFromServer } from './store/NextCard';
+import { connect } from 'react-redux'
 
 class Dealer extends React.Component {
   constructor() {
@@ -22,6 +24,7 @@ class Dealer extends React.Component {
     this.onPlayerStand = this.onPlayerStand.bind(this)
     this.onDoubleDown = this.onDoubleDown.bind(this)
     this.onCheckHands = this.onCheckHands.bind(this)
+    this.onFlipDealerCard = this.onFlipDealerCard.bind(this)
   }
 
   componentDidMount() {
@@ -37,11 +40,11 @@ class Dealer extends React.Component {
 
   OnDealHand(cards) {
     this.setState({
-      dealerCards: [ cards.cards[2] ],
-      dealerValue: this.getCardValue(cards.cards[2].value),
-      dealerHiddenCard: cards.cards[0],
-      playerCards: [cards.cards[1], cards.cards[3] ],
-      playerValue: this.getCardValue(cards.cards[1].value) + this.getCardValue(cards.cards[3].value),
+      dealerCards: [ cards.cards[3] ],
+      dealerValue: this.getCardValue(cards.cards[3].value),
+      dealerHiddenCard: cards.cards[1],
+      playerCards: [cards.cards[0], cards.cards[2] ],
+      playerValue: this.getCardValue(cards.cards[0].value) + this.getCardValue(cards.cards[2].value),
       result: ''
     })
   }
@@ -70,6 +73,30 @@ class Dealer extends React.Component {
         this.setState({playerStand: false })
         this.OnDealHand(cards)
       })
+      .then(() => {
+        const { playerValue, dealerValue, dealerHiddenCard } = this.state
+        const realDealerValue = dealerValue + this.getCardValue(dealerHiddenCard.value)
+        console.log('dealer cards: ', realDealerValue)
+        console.log('player cards: ', playerValue)
+        if (playerValue === 21) {
+          return setTimeout(() => {
+            this.onFlipDealerCard()
+            this.setState({ result: `You win with Stackjack!` })
+          }, 1000)
+        }
+        else if (realDealerValue === 21) {
+          return setTimeout(() => {
+            this.onFlipDealerCard()
+            this.setState({ result: `Dealer has Blackjack` })
+          }, 1000)
+        }
+        else if (playerValue === 21 && realDealerValue === 21 ) {
+          return setTimeout(() => {
+            this.onFlipDealerCard()
+            this.setState({ result: `Push - play again!` })
+          }, 1000)
+        }
+      })
   }
 
   onPlayerHit() {
@@ -90,25 +117,26 @@ class Dealer extends React.Component {
     // this.onPlayerStand()
   }
 
-  onPlayerStand() {
+  onFlipDealerCard() {
     const { dealerValue, dealerCards, dealerHiddenCard, playerValue, result, deck } = this.state
     this.setState({
-      dealerCards: [ dealerHiddenCard, ...dealerCards ],
+      dealerCards: [dealerHiddenCard, ...dealerCards],
       dealerValue: dealerValue + this.getCardValue(dealerHiddenCard.value),
       playerStand: true
     })
-    console.log('ON PLAYER STAND: ',this.state.dealerValue)
+  }
+
+  onPlayerStand() {
+    this.onFlipDealerCard()
     setTimeout(() => this.onCheckHands(), 1000)
   }
 
   onCheckHands() {
     const { dealerValue, dealerCards, playerValue, result, deck } = this.state
-    console.log('BEFORE CHECK HAND: ', this.state.dealerValue)
     if (dealerValue <= 16) {
       axios.get(`https://deckofcardsapi.com/api/deck/${deck}/draw/?count=1`)
         .then(res => res.data)
         .then(card => {
-          console.log('ON CHECK HANDS: ',this.state.dealerValue)
           this.setState({
             dealerCards: [ ...this.state.dealerCards, card.cards[0]],
             dealerValue: this.state.dealerValue + this.getCardValue(card.cards[0].value),
@@ -136,7 +164,7 @@ class Dealer extends React.Component {
     const { onStartHand, onNewDeck, onPlayerHit, onPlayerStand, onDoubleDown } = this
     const { dealerCards, dealerValue, dealerHiddenCard, playerCards, playerValue, result, playerStand } = this.state
     /* BUTTON DISABLING */
-    const noStartHand = dealerCards.length > 1 && playerCards.length > 1
+    const noStartHand = playerCards.length > 1
     const noNewDeck = !dealerCards.length || !playerCards.length
     const noPlayerCards = !playerCards.length
     const playerBust = playerValue > 21
@@ -195,8 +223,8 @@ class Dealer extends React.Component {
           <Button onPress={ onPlayerHit } disabled={ noPlayerCards || playerBust || !!result } title="Hit" />
           <Button onPress={ onPlayerStand } disabled={ noPlayerCards || playerBust || !!result }
           title="Stand" />
-          <Button onPress={ onDoubleDown } disabled={ noPlayerCards || playerBust || !!result }
-          title="Double Down" />
+          {/*<Button onPress={ onDoubleDown } disabled={ noPlayerCards || playerBust || !!result }
+        title="Double Down" />*/}
         </View>
       </View>
     )
@@ -240,4 +268,15 @@ const styles = StyleSheet.create({
   }
 })
 
-export default Dealer;
+
+const mapState = ({ nextCard }) => {
+  return { nextCard }
+}
+
+const mapDispatch = (dispatch) => {
+  return {
+    getNextCard: () => dispatch(getOneCardFromServer())
+  }
+}
+
+export default connect(mapState, mapDispatch)(Dealer);
