@@ -5,7 +5,7 @@ import { StyleSheet, Text, View } from 'react-native';
 const Header = () => {
   return (
     <View style={ styles.container }>
-      <Text style={ styles.text }>StackJack</Text>
+      <Text style={ styles.text }>Play Game</Text>
     </View>
   )
 }
@@ -14,14 +14,14 @@ const Header = () => {
 const styles = StyleSheet.create({
   container: {
     // flex: 1,
-    height: 50,
+    height: 40,
     backgroundColor: 'green',
     alignItems: 'center',
     justifyContent: 'center',
     width: 100000,
   },
   text: {
-    fontSize: 35,
+    fontSize: 25,
     color: 'white'
   }
 });

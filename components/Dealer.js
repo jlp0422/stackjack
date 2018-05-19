@@ -2,7 +2,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, Image, Button } from 'react-native';
 import axios from 'axios';
-import { getOneCardFromServer } from './store/NextCard';
+import { getOneCardFromServer } from '../store/NextCard';
 import { connect } from 'react-redux'
 
 class Dealer extends React.Component {
@@ -181,7 +181,7 @@ class Dealer extends React.Component {
             <Text></Text>
             <Image
               style={styles.image}
-              source={require('./card-back.jpg')}
+              source={require('./../card-back.jpg')}
             />
           </View>
         }
@@ -224,7 +224,7 @@ class Dealer extends React.Component {
           <Button onPress={ onPlayerStand } disabled={ noPlayerCards || playerBust || !!result }
           title="Stand" />
           <Button onPress={ onDoubleDown } disabled={ noPlayerCards || playerBust || !!result }
-        title="Double Down" />}
+        title="Double Down" />
         </View>
       </View>
     )
