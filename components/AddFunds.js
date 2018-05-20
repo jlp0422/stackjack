@@ -59,14 +59,16 @@ class AddFundsInfo extends React.Component {
               <ActivityIndicator size="large" color="#00ff00" />
             </View>
           ) : (
+            <View style={ styles.input }>
+            <Text style={ styles.inputText }>$</Text>
             <TextInput
               autoFocus={ !doneAdding }
-              // autoFocus
-              style={ styles.amount }
-              onChangeText={(text) => this.setState({ amount: text })}
+              style={ styles.inputText }
+              onChangeText={amount => this.setState({ amount })}
               keyboardType='numeric'
-              value={amount}
+              value={ amount }
             />
+            </View>
           )
         }
         <View><Button title="Add now" onPress={ onAddNow } /></View>
@@ -85,7 +87,7 @@ const styles = StyleSheet.create({
     paddingRight: 25,
     paddingTop: 100
   },
-  amount: {
+  inputText: {
     fontSize: 30,
     paddingTop: 20,
     paddingBottom: 25,
@@ -101,6 +103,13 @@ const styles = StyleSheet.create({
   },
   loading: {
     padding: 22
+  },
+  input: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 0,
+    maxHeight: 100
   }
 });
 

@@ -102,7 +102,7 @@ const handReducer = (state = initialState, action) => {
         dealerHiddenCard: {},
         playerCards: [],
         playerValue: 0,
-        playerStand: false,
+        playerStand: false
       })
 
     case GET_NEW_HAND:
@@ -133,4 +133,4 @@ const handReducer = (state = initialState, action) => {
   return state
 }
 
-export default handReducer
+export default handReducer;

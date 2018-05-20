@@ -203,7 +203,7 @@ class Dealer extends React.Component {
       this.props.dealOneCard(deck, 'dealer')
         .then(() => {
           const { dealerValue, dealerCards } = this.props.hand
-          let dealerAceCount = this.onCheckForAce(dealerCards, 'player')
+          let dealerAceCount = this.onCheckForAce(dealerCards, 'dealer')
           if (dealerValue > 21 && dealerAceCount && dealerAceTracker[dealerAceCount].checked && !dealerAceTracker[dealerAceCount].subtracted) {
             this.props.makeAceOne('dealer')
             dealerAceTracker[dealerAceCount].checked = true
@@ -247,6 +247,7 @@ class Dealer extends React.Component {
     const noPlayerCards = !playerCards.length
     const playerBust = playerValue > 21
     const noBet = playerCards.length > 1 && !result
+    const playerAction = noPlayerCards || playerBust || !!result
 
     return (
       <View style={ styles.container }>
@@ -292,57 +293,32 @@ class Dealer extends React.Component {
         </View>
 
         <View style={ styles.inline }>
-          <Button onPress={ onPlayerHit } disabled={ noPlayerCards || playerBust || !!result } title="Hit" />
-          <Button onPress={ onPlayerStand } disabled={ noPlayerCards || playerBust || !!result } title="Stand" />
-          <Button onPress={ onDoubleDown } disabled={ noPlayerCards || playerBust || !!result || playerCards.length > 2 } title="Double Down" />
+          <Button onPress={ onPlayerHit } disabled={ playerAction } title="Hit" />
+          <Button onPress={ onPlayerStand } disabled={ playerAction } title="Stand" />
+          <Button onPress={ onDoubleDown } disabled={ playerAction || playerCards.length > 2 } title="Double Down" />
         </View>
         <View style={ styles.inline }>
           <Text style={ styles.headline1 }>Wager:</Text>
           <TouchableWithoutFeedback disabled={ noBet } onPress={() => onWagerChange('decrease')}>
             <View>
-              <Text style={{
-                fontWeight: 'bold',
-                textAlign: 'center',
-                fontSize: 20,
-                color: noBet ? 'gray' : 'black',
-                borderColor: noBet ? 'gray' : 'black',
-                borderStyle: 'solid',
-                borderWidth: 2,
-                paddingTop: 5,
-                paddingBottom: 5,
-                paddingRight: 10,
-                paddingLeft: 10,
-                borderRadius: 10,
-              }}>&#x2D;</Text>
+              <Text style={ [ styles.betButton, { color: noBet ? 'gray' : 'black', borderColor: noBet ? 'gray' : 'black', } ] }>
+                {/* minus sign*/}
+                &#x2D;
+              </Text>
             </View>
           </TouchableWithoutFeedback>
-          <Text style={{
-            fontWeight: 'bold',
-            textAlign: 'center',
-            fontSize: 20,
-            color: noBet ? 'gray' : 'black',
-            }}>${wager}</Text>
+          <Text style={ [ styles.betText, { color: noBet ? 'gray' : 'black' }] }>${wager}</Text>
           <TouchableWithoutFeedback disabled={ noBet } onPress={() => onWagerChange('increase')}>
             <View>
-              <Text style={{
-                fontWeight: 'bold',
-                textAlign: 'center',
-                fontSize: 20,
-                color: noBet ? 'gray' : 'black',
-                borderColor: noBet ? 'gray' : 'black',
-                borderStyle: 'solid',
-                borderWidth: 2,
-                paddingTop: 5,
-                paddingBottom: 5,
-                paddingRight: 10,
-                paddingLeft: 10,
-                borderRadius: 10,
-              }}>&#x2B;</Text>
+              <Text style={ [ styles.betButton, { color: noBet ? 'gray' : 'black', borderColor: noBet ? 'gray' : 'black', } ] }>
+                {/* plus sign*/}
+                &#x2B;
+              </Text>
             </View>
           </TouchableWithoutFeedback>
         </View>
         <Text style={ styles.headline2 }>My Bankroll: ${ formatNumber(playerBankroll) }</Text>
-        <Button onPress={ addFundsPrompt } title="Add $25" disabled={ playerBankroll > 5 }/>
+        <Button onPress={ addFundsPrompt } title="Add $25 to Bankroll" disabled={ playerBankroll > 5 }/>
       </View>
     )
   }
@@ -351,7 +327,8 @@ class Dealer extends React.Component {
 const styles = StyleSheet.create({
   container: {
     paddingBottom: 50,
-    paddingTop: 20
+    paddingTop: 20,
+    minWidth: '90%'
   },
   headline1: {
     fontWeight: 'bold',
@@ -382,6 +359,23 @@ const styles = StyleSheet.create({
     width: 55,
     height: 77,
     alignSelf: 'center'
+  },
+  betButton: {
+    fontWeight: 'bold',
+    textAlign: 'center',
+    fontSize: 20,
+    borderStyle: 'solid',
+    borderWidth: 2,
+    paddingTop: 5,
+    paddingBottom: 5,
+    paddingRight: 10,
+    paddingLeft: 10,
+    borderRadius: 10,
+  },
+  betText: {
+    fontWeight: 'bold',
+    textAlign: 'center',
+    fontSize: 20,
   }
 })
 
