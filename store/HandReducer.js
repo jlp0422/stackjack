@@ -73,19 +73,19 @@ const initialState = {
 }
 
 const handReducer = (state = initialState, action) => {
-  console.log('REDUCER ACTION: ', action.type)
+  // console.log('REDUCER ACTION: ', action.type)
   switch(action.type) {
 
     case ADD_PLAYER_CARD:
       return Object.assign({}, state, {
         playerCards: [ ...state.playerCards, action.card ],
-        playerValue: state.playerValue + getCardValue(action.card.value, state.playerValue, state.playerCards, 'player')
+        playerValue: state.playerValue + getCardValue(action.card.value)
       })
 
     case ADD_DEALER_CARD:
       return Object.assign({}, state, {
         dealerCards: [ ...state.dealerCards, action.card ],
-        dealerValue: state.dealerValue + getCardValue(action.card.value, state.dealerValue, state.dealerCards)
+        dealerValue: state.dealerValue + getCardValue(action.card.value)
       })
 
     case FLIP_DEALER_CARD:
@@ -111,7 +111,7 @@ const handReducer = (state = initialState, action) => {
         dealerValue: getCardValue(action.cards.cards[3].value),
         dealerHiddenCard: action.cards.cards[1],
         playerCards: [ action.cards.cards[0], action.cards.cards[2] ],
-        playerValue: getCardValue(action.cards.cards[0].value, 0, []) + getCardValue(action.cards.cards[2].value, getCardValue(action.cards.cards[0].value), [ action.cards.cards[0] ], 'player'),
+        playerValue: getCardValue(action.cards.cards[0].value) + getCardValue(action.cards.cards[2].value),
         playerStand: false
       })
 

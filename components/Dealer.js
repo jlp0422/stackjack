@@ -52,7 +52,7 @@ class Dealer extends React.Component {
   addFundsPrompt() {
     Alert.alert(
       'Add $25 to your bankroll?',
-      `You currently have $${this.props.hand.playerBankroll}`,
+      `You currently have $${this.props.hand.playerBankroll.toFixed(2)}`,
       [
         { text: 'Cancel', onPress: () => null, style: 'cancel' },
         { text: 'Yes', onPress: () => this.props.addFunds(), style: 'default' },
@@ -61,9 +61,10 @@ class Dealer extends React.Component {
     )
   }
 
-  onPlayerWin() {
+  onPlayerWin(stackjack) {
     const { wager, doubledDown } = this.state
-    this.props.playerWin(wager)
+    const winningMoney = stackjack ? wager * 1.2 : wager
+    this.props.playerWin(winningMoney)
     if (doubledDown) this.setState({ doubledDown: false, wager: wager / 2 })
   }
 
@@ -131,7 +132,7 @@ class Dealer extends React.Component {
             return setTimeout(() => {
               this.props.flipCard()
               this.setState({ result: `You win with StackJack!` })
-              this.onPlayerWin()
+              this.onPlayerWin('blackjack')
             }, 500)
           }
           else if (realDealerValue === 21) {
@@ -157,15 +158,10 @@ class Dealer extends React.Component {
       .then(() => {
         const { playerValue, playerCards } = this.props.hand
         let playerAceCount = this.onCheckForAce(playerCards, 'player')
-        console.log('**** PLAYER ACE COUNT: ', playerAceCount)
-        console.log('**** PLAYER ACE TRACKER BEFORE: ', playerAceTracker)
-        // console.log('*** PLAYER VALUE BEFORE ACE CHECKED: ', playerValue)
         if (playerValue > 21 && playerAceCount && playerAceTracker[playerAceCount].checked && !playerAceTracker[playerAceCount].subtracted) {
-          // console.log('ACE HAS BEEN MADE ONE')
           this.props.makeAceOne('player')
           playerAceTracker[playerAceCount].checked = true
           playerAceTracker[playerAceCount].subtracted = true
-          console.log('**** PLAYER ACE TRACKER AFTERS SUBTRACTION: ', playerAceTracker)
         }
       })
       .then(() => {
@@ -335,7 +331,7 @@ class Dealer extends React.Component {
             </View>
           </TouchableWithoutFeedback>
         </View>
-        <Text style={ styles.headline2 }>My Bankroll: ${playerBankroll}</Text>
+        <Text style={ styles.headline2 }>My Bankroll: ${playerBankroll.toFixed(2)}</Text>
         <Button onPress={ addFundsPrompt } title="Add $25" disabled={ playerBankroll > 5 }/>
       </View>
     )
