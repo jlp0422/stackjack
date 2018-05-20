@@ -12,6 +12,7 @@ import {
   PLAYER_LOSE,
   MAKE_PLAYER_ACE_ONE,
   MAKE_DEALER_ACE_ONE,
+  ADD_FUNDS,
   getCardValue } from './actionConstants';
 
 const addPlayerCard = (card) => ({type: ADD_PLAYER_CARD, card })
@@ -23,6 +24,7 @@ const winningHand = (stake) => ({ type: PLAYER_WIN, stake })
 const losingHand = (stake) => ({ type: PLAYER_LOSE, stake})
 const makePlayerAceOne = () => ({ type: MAKE_PLAYER_ACE_ONE })
 const makeDealerAceOne = () => ({ type: MAKE_DEALER_ACE_ONE })
+const addFunds = () => ({ type: ADD_FUNDS })
 
 export const newDeck = () => {
   return (dispatch) => {
@@ -50,6 +52,7 @@ export const dealOneCard = (deck, player) => {
 }
 
 export const flipCard = () => flipDealerCard()
+export const addFundsToAccount = () => addFunds()
 export const playerWin = (stake) => winningHand(stake)
 export const playerLose = (stake) => losingHand(stake)
 export const makeAceOne = (player) => {
@@ -64,7 +67,7 @@ const initialState = {
   playerCards: [],
   playerValue: 0,
   playerStand: false,
-  playerBankroll: 25
+  playerBankroll: 0
 }
 
 const handReducer = (state = initialState, action) => {
@@ -118,6 +121,9 @@ const handReducer = (state = initialState, action) => {
 
     case MAKE_PLAYER_ACE_ONE:
       return Object.assign({}, state, { playerValue: state.playerValue - 10 })
+
+    case ADD_FUNDS:
+      return Object.assign({}, state, { playerBankroll: state.playerBankroll + 25 })
   }
   return state
 }

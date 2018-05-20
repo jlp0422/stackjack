@@ -1,6 +1,6 @@
 /* eslint-disable */
 import React from 'react';
-import { StyleSheet, Text, View, ScrollView, Button } from 'react-native';
+import { StyleSheet, Text, View, ScrollView, Button, Alert } from 'react-native';
 import { createStackNavigator } from 'react-navigation';
 import { Provider, connect } from 'react-redux';
 import store from './store';
@@ -8,6 +8,7 @@ import Header from './components/Header';
 import Footer from './components/Footer';
 import Dealer from './components/Dealer';
 import HintInfo from './components/HintInfo';
+import AddFundsInfo from './components/AddFunds'
 
 class App extends React.Component {
   static navigationOptions = ({ navigation }) => {
@@ -19,7 +20,14 @@ class App extends React.Component {
           title="Hint"
           color="#fff"
         />
-      )
+      ),
+      headerLeft: (
+        <Button
+          onPress={() => navigation.navigate('AddFunds')}
+          title="Add Funds"
+          color="#fff"
+        />
+      ),
     }
   }
 
@@ -62,6 +70,29 @@ class Hint extends React.Component {
   }
 }
 
+class AddFunds extends React.Component {
+  constructor() {
+    super()
+    this.onGoBack = this.onGoBack.bind(this)
+  }
+  static navigationOptions = {
+    title: 'Add Funds',
+  };
+
+  onGoBack() {
+    this.props.navigation.goBack()
+  }
+
+  render() {
+    const { onGoBack } = this
+    return (
+      <Provider store={store}>
+        <AddFundsInfo goBack={onGoBack} />
+      </Provider>
+    )
+  }
+}
+
 const MainStack = createStackNavigator(
   {
     Home: { screen: App },
@@ -80,7 +111,8 @@ const MainStack = createStackNavigator(
 const RootStack = createStackNavigator(
   {
     Main: { screen: MainStack },
-    Hint: { screen: Hint }
+    Hint: { screen: Hint },
+    AddFunds: { screen: AddFunds }
   },
   {
     mode: 'modal',

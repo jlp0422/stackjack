@@ -1,9 +1,9 @@
 /* eslint-disable */
 import React from 'react';
-import { View, Text, StyleSheet, Image, Button, TextInput, TouchableWithoutFeedback } from 'react-native';
+import { View, Text, StyleSheet, Image, Button, TextInput, TouchableWithoutFeedback, Alert } from 'react-native';
 import axios from 'axios';
 import { connect } from 'react-redux';
-import { dealOneCard, newDeck, newHand, flipCard, playerWin, playerLose, makeAceOne } from '../store/HandReducer';
+import { dealOneCard, newDeck, newHand, flipCard, playerWin, playerLose, makeAceOne, addFundsToAccount } from '../store/HandReducer';
 import { getCardValue } from '../store/actionConstants';
 const cardBack = require('../card-back.jpg')
 
@@ -25,6 +25,7 @@ class Dealer extends React.Component {
     this.onPlayerWin = this.onPlayerWin.bind(this)
     this.onPlayerLose = this.onPlayerLose.bind(this)
     this.onCheckForAce = this.onCheckForAce.bind(this)
+    this.addFundsPrompt = this.addFundsPrompt.bind(this)
   }
 
   componentWillMount() {
@@ -42,6 +43,18 @@ class Dealer extends React.Component {
       if (wager === 0) return
       else this.setState({ wager: wager - 1 })
     }
+  }
+
+  addFundsPrompt() {
+    Alert.alert(
+      'Add $25 to your bankroll',
+      `You currently have $${this.props.hand.playerBankroll}`,
+      [
+        { text: 'Cancel', onPress: () => console.log('No Funds added'), style: 'cancel' },
+        { text: 'Yes', onPress: () => this.props.addFunds()},
+      ],
+      { cancelable: false }
+    )
   }
 
   onPlayerWin() {
@@ -114,11 +127,14 @@ class Dealer extends React.Component {
   onPlayerHit() {
     const { playerCards } = this.props.hand
     const { deck, result } = this.state
-    const playerAceCount = this.onCheckForAce(playerCards)
+    let playerAceCount = this.onCheckForAce(playerCards)
     this.props.dealOneCard(deck, 'player')
       .then(() => {
+        console.log('*** PLAYER ACE COUNT: ', playerAceCount)
         const { playerValue } = this.props.hand
-        if (playerAceCount && playerValue > 21) this.props.makeAceOne('player')
+        if (playerAceCount && playerValue > 21) {
+          this.props.makeAceOne('player')
+        }
       })
       .then(() => {
         const { playerValue } = this.props.hand
@@ -181,7 +197,7 @@ class Dealer extends React.Component {
   }
 
   render() {
-    const { onStartHand, onNewDeck, onPlayerHit, onPlayerStand, onDoubleDown, onWagerChange } = this
+    const { onStartHand, onNewDeck, onPlayerHit, onPlayerStand, onDoubleDown, onWagerChange, addFundsPrompt } = this
     const { dealerCards, dealerValue, dealerHiddenCard, playerCards, playerValue, playerStand, playerBankroll } = this.props.hand
     const { result, wager } = this.state
     /* BUTTON DISABLING */
@@ -285,6 +301,7 @@ class Dealer extends React.Component {
           </TouchableWithoutFeedback>
         </View>
         <Text style={ styles.headline2 }>My Bankroll: ${playerBankroll}</Text>
+        <Button onPress={ addFundsPrompt } title="Add Funds" disabled={ playerBankroll > 5 }/>
       </View>
     )
   }
@@ -340,7 +357,8 @@ const mapDispatch = (dispatch) => {
     flipCard: () => dispatch(flipCard()),
     playerWin: (stake) => dispatch(playerWin(stake)),
     playerLose: (stake) => dispatch(playerLose(stake)),
-    makeAceOne: (player) => dispatch(makeAceOne(player))
+    makeAceOne: (player) => dispatch(makeAceOne(player)),
+    addFunds: () => dispatch(addFundsToAccount())
   }
 }
 
