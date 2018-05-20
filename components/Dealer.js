@@ -47,11 +47,11 @@ class Dealer extends React.Component {
 
   addFundsPrompt() {
     Alert.alert(
-      'Add $25 to your bankroll',
+      'Add $25 to your bankroll?',
       `You currently have $${this.props.hand.playerBankroll}`,
       [
-        { text: 'Cancel', onPress: () => console.log('No Funds added'), style: 'cancel' },
-        { text: 'Yes', onPress: () => this.props.addFunds()},
+        { text: 'Cancel', onPress: () => null, style: 'cancel' },
+        { text: 'Yes', onPress: () => this.props.addFunds(), style: 'default' },
       ],
       { cancelable: false }
     )
@@ -301,7 +301,7 @@ class Dealer extends React.Component {
           </TouchableWithoutFeedback>
         </View>
         <Text style={ styles.headline2 }>My Bankroll: ${playerBankroll}</Text>
-        <Button onPress={ addFundsPrompt } title="Add Funds" disabled={ playerBankroll > 5 }/>
+        <Button onPress={ addFundsPrompt } title="Add $25" disabled={ playerBankroll > 5 }/>
       </View>
     )
   }

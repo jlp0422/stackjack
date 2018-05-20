@@ -47,7 +47,9 @@ export const dealOneCard = (deck, player) => {
   return (dispatch) => {
     return axios.get(`https://deckofcardsapi.com/api/deck/${deck}/draw/?count=1`)
     .then( res => res.data)
-    .then( card => dispatch(method(card.cards[0])))
+    .then( card => {
+      dispatch(method(card.cards[0]))
+    })
   }
 }
 
