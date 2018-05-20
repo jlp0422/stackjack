@@ -87,7 +87,7 @@ class Dealer extends React.Component {
   onStartHand() {
     const { deck, wager } = this.state
     const { playerBankroll } = this.props.hand
-    if (wager > playerBankroll) return alert(`You can't fund that bet!`)
+    if (wager > playerBankroll) return Alert.alert('Hold up', `You can't fund that bet!`)
     else {
       this.setState({ result: '' })
       this.props.newHand(deck)
@@ -149,7 +149,7 @@ class Dealer extends React.Component {
   onDoubleDown() {
     const { wager } = this.state
     const { playerBankroll } = this.props.hand
-    if (wager * 2 > playerBankroll) return alert(`You dont have enough money to Double Down!`)
+    if (wager * 2 > playerBankroll) return Alert.alert('Hold up', 'You dont have enough money to Double Down!')
     else {
       this.setState({ wager: wager * 2 })
       setTimeout(() => this.onPlayerHit(), 200)

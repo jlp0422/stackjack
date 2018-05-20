@@ -1,6 +1,6 @@
 /* eslint-disable */
 import React from 'react';
-import { StyleSheet, Text, View, ScrollView, Button, Alert } from 'react-native';
+import { StyleSheet, Text, View, ScrollView, Button, Alert, StatusBar } from 'react-native';
 import { createStackNavigator } from 'react-navigation';
 import { Provider, connect } from 'react-redux';
 import store from './store';
@@ -36,7 +36,6 @@ class App extends React.Component {
     return (
       <Provider store={ store }>
       <View style={styles.container}>
-        {/*<Header />*/}
         <ScrollView>
           <Dealer />
         </ScrollView>

@@ -1,6 +1,6 @@
 /* eslint-disable */
 import React from 'react';
-import { StyleSheet, Text, View, Button, TextInput, Alert } from 'react-native';
+import { StyleSheet, Text, View, Button, TextInput, Alert, ActivityIndicator, Keyboard } from 'react-native';
 import { connect } from 'react-redux';
 import { addFundsToAccount } from '../store/HandReducer';
 
@@ -10,7 +10,10 @@ class AddFundsInfo extends React.Component {
   constructor() {
     super()
     this.state = {
-      amount: '10'
+      amount: '10',
+      isAdding: false,
+      doneAdding: false,
+      error: ''
     }
     this.onAddNow = this.onAddNow.bind(this)
   }
@@ -29,7 +32,17 @@ class AddFundsInfo extends React.Component {
         },
         {
           text: 'Confirm',
-          onPress: () => addFunds(amount * 1),
+          onPress: () => {
+            if (!(amount * 1)) {
+              this.setState({ error: 'Please enter a valid number'})
+              return
+            }
+            else {
+              this.setState({ isAdding: true, doneAdding: true, error: '' })
+              setTimeout(() => addFunds(amount * 1), 1000);
+              setTimeout(() => this.setState({ isAdding: false }), 1200);
+            }
+          },
           style: 'default',
         },
       ]
@@ -39,17 +52,28 @@ class AddFundsInfo extends React.Component {
   render() {
     const { addFunds, playerBankroll, goBack } = this.props
     const { onAddNow } = this
-    const { amount } = this.state
+    const { amount, isAdding, doneAdding, error } = this.state
     return (
       <View style={styles.hint}>
         <Text style={styles.text}>Add money to your bankroll?</Text>
-        <TextInput
-          style={ styles.amount }
-          onChangeText={(text) => this.setState({ amount: text })}
-          keyboardType='numeric'
-          value={amount}
-        />
-        <View ><Button title="Add now" onPress={ onAddNow } /></View>
+        { error && <Text style={{ fontSize: 20, color: 'red' }}>{error}</Text>}
+        {
+          isAdding ? (
+            <View style={ styles.loading }>
+              <ActivityIndicator size="large" color="#00ff00" />
+            </View>
+          ) : (
+            <TextInput
+              autoFocus={ !doneAdding }
+              // autoFocus
+              style={ styles.amount }
+              onChangeText={(text) => this.setState({ amount: text })}
+              keyboardType='numeric'
+              value={amount}
+            />
+          )
+        }
+        <View><Button title="Add now" onPress={ onAddNow } /></View>
         <View style={ styles.button }><Button title="Back to game" onPress={ goBack } /></View>
       </View>
     )
@@ -78,6 +102,9 @@ const styles = StyleSheet.create({
   },
   button: {
     paddingTop: 20
+  },
+  loading: {
+    padding: 22
   }
 });
 
