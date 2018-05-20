@@ -358,7 +358,7 @@ const mapDispatch = (dispatch) => {
     playerWin: (stake) => dispatch(playerWin(stake)),
     playerLose: (stake) => dispatch(playerLose(stake)),
     makeAceOne: (player) => dispatch(makeAceOne(player)),
-    addFunds: () => dispatch(addFundsToAccount())
+    addFunds: () => dispatch(addFundsToAccount(25))
   }
 }
 

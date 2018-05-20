@@ -1,19 +1,36 @@
 /* eslint-disable */
 import React from 'react';
-import { StyleSheet, Text, View, Button } from 'react-native';
+import { StyleSheet, Text, View, Button, TextInput } from 'react-native';
 import { connect } from 'react-redux';
 import { addFundsToAccount } from '../store/HandReducer';
 
 // add input amount?
 
-const AddFundsInfo = ({ addFunds, playerBankroll, goBack }) => {
-  return (
-    <View style={styles.hint}>
-      <Text style={styles.text}>Add money to your bankroll?</Text>
-      <Button title="Add $25" onPress={ addFunds } />
-      <Button title="Not right now" onPress={ goBack } />
-    </View>
-  )
+class AddFundsInfo extends React.Component {
+  constructor() {
+    super()
+    this.state = {
+      amount: '10'
+    }
+  }
+
+  render() {
+    const { addFunds, playerBankroll, goBack } = this.props
+    const { amount } = this.state
+    return (
+      <View style={styles.hint}>
+        <Text style={styles.text}>Add money to your bankroll?</Text>
+        <TextInput
+          style={{ fontSize: 30, padding: 20 }}
+          onChangeText={(text) => this.setState({ amount: text })}
+          keyboardType='numeric'
+          value={amount}
+        />
+        <Button title="Add now" onPress={() => addFunds(amount * 1) } />
+        <Button title="Not right now" onPress={ goBack } />
+      </View>
+    )
+  }
 }
 
 const styles = StyleSheet.create({
@@ -29,12 +46,6 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontSize: 30,
     paddingBottom: 10
-  },
-  odds: {
-    fontSize: 30,
-    textAlign: 'center',
-    paddingBottom: 30,
-    fontWeight: 'bold'
   }
 });
 
@@ -45,8 +56,8 @@ const mapState = ({ hand }, { goBack }) => {
 
 const mapDispatch = (dispatch, { goBack }) => {
   return {
-    addFunds: () => {
-      dispatch(addFundsToAccount())
+    addFunds: (amount) => {
+      dispatch(addFundsToAccount(amount))
       goBack()
     }
   }

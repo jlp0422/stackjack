@@ -24,7 +24,7 @@ const winningHand = (stake) => ({ type: PLAYER_WIN, stake })
 const losingHand = (stake) => ({ type: PLAYER_LOSE, stake})
 const makePlayerAceOne = () => ({ type: MAKE_PLAYER_ACE_ONE })
 const makeDealerAceOne = () => ({ type: MAKE_DEALER_ACE_ONE })
-const addFunds = () => ({ type: ADD_FUNDS })
+const addFunds = (amount) => ({ type: ADD_FUNDS, amount })
 
 export const newDeck = () => {
   return (dispatch) => {
@@ -52,7 +52,7 @@ export const dealOneCard = (deck, player) => {
 }
 
 export const flipCard = () => flipDealerCard()
-export const addFundsToAccount = () => addFunds()
+export const addFundsToAccount = (amount) => addFunds(amount)
 export const playerWin = (stake) => winningHand(stake)
 export const playerLose = (stake) => losingHand(stake)
 export const makeAceOne = (player) => {
@@ -72,6 +72,7 @@ const initialState = {
 
 const handReducer = (state = initialState, action) => {
   console.log('REDUCER ACTION: ', action.type)
+  console.log('FUNDS AMOUNT: ', action.amount)
   switch(action.type) {
 
     case ADD_PLAYER_CARD:
@@ -123,7 +124,7 @@ const handReducer = (state = initialState, action) => {
       return Object.assign({}, state, { playerValue: state.playerValue - 10 })
 
     case ADD_FUNDS:
-      return Object.assign({}, state, { playerBankroll: state.playerBankroll + 25 })
+      return Object.assign({}, state, { playerBankroll: state.playerBankroll + action.amount })
   }
   return state
 }
