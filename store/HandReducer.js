@@ -74,13 +74,12 @@ const initialState = {
 
 const handReducer = (state = initialState, action) => {
   console.log('REDUCER ACTION: ', action.type)
-  console.log('FUNDS AMOUNT: ', action.amount)
   switch(action.type) {
 
     case ADD_PLAYER_CARD:
       return Object.assign({}, state, {
         playerCards: [ ...state.playerCards, action.card ],
-        playerValue: state.playerValue + getCardValue(action.card.value)
+        playerValue: state.playerValue + getCardValue(action.card.value, state.playerValue, state.playerCards)
       })
 
     case ADD_DEALER_CARD:

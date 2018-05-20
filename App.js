@@ -36,6 +36,7 @@ class App extends React.Component {
     return (
       <Provider store={ store }>
       <View style={styles.container}>
+        <StatusBar barStyle='light-content'/>
         <ScrollView>
           <Dealer />
         </ScrollView>
@@ -92,9 +93,26 @@ class AddFunds extends React.Component {
   }
 }
 
+class HomeScreen extends React.Component {
+  static navigationOptions = {
+    title: 'StackJack'
+  }
+
+  render() {
+    return (
+      <View style={ styles.launch }>
+        <StatusBar barStyle='light-content' />
+        <Text style={ styles.title }>Welcome to StackJack!</Text>
+        <Button title="Let's play!" onPress={() => this.props.navigation.navigate('Game')}></Button>
+      </View>
+    )
+  }
+}
+
 const MainStack = createStackNavigator(
   {
-    Home: { screen: App },
+    Home: { screen: HomeScreen },
+    Game: { screen: App }
   },
   {
     initialRouteName: 'Home',
@@ -131,6 +149,12 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     alignItems: 'center',
   },
+  launch: {
+    flex: 1,
+    backgroundColor: '#ddd',
+    alignItems: 'center',
+    paddingTop: 150,
+  },
   hint: {
     flex: 1,
     backgroundColor: '#fff',
@@ -141,5 +165,11 @@ const styles = StyleSheet.create({
   },
   text: {
     textAlign: 'center'
+  },
+  title: {
+    fontSize: 50,
+    textAlign: 'center',
+    color: '#128632',
+    paddingBottom: 30
   }
 });

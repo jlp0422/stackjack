@@ -33,10 +33,7 @@ class AddFundsInfo extends React.Component {
         {
           text: 'Confirm',
           onPress: () => {
-            if (!(amount * 1)) {
-              this.setState({ error: 'Please enter a valid number'})
-              return
-            }
+            if (!(amount * 1)) return this.setState({ error: 'Please enter a valid number'})
             else {
               this.setState({ isAdding: true, doneAdding: true, error: '' })
               setTimeout(() => addFunds(amount * 1), 1000);

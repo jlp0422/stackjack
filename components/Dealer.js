@@ -94,12 +94,12 @@ class Dealer extends React.Component {
         .then(() => {
           const { playerValue, dealerValue, dealerHiddenCard, playerCards, dealerCards } = this.props.hand
           const realDealerValue = dealerValue + getCardValue(dealerHiddenCard.value)
-          const playerAceCount = this.onCheckForAce(playerCards)
-          const dealerAceCount = this.onCheckForAce(dealerCards) + (dealerHiddenCard.value === 'ACE' ? 1 : 0)
-          console.log('*** PLAYER ACES: ', playerAceCount)
-          console.log('*** DEALER ACES: ', dealerAceCount)
-          if (playerAceCount === 2) this.props.makeAceOne('player')
-          if (dealerAceCount === 2) this.props.makeAceOne('dealer')
+          // const playerAceCount = this.onCheckForAce(playerCards)
+          // const dealerAceCount = this.onCheckForAce(dealerCards) + (dealerHiddenCard.value === 'ACE' ? 1 : 0)
+          // console.log('*** PLAYER ACES: ', playerAceCount)
+          // console.log('*** DEALER ACES: ', dealerAceCount)
+          // if (playerAceCount === 2) this.props.makeAceOne('player')
+          // if (dealerAceCount === 2) this.props.makeAceOne('dealer')
           if (playerValue === 21) {
             return setTimeout(() => {
               this.props.flipCard()
@@ -129,13 +129,6 @@ class Dealer extends React.Component {
     const { deck, result } = this.state
     let playerAceCount = this.onCheckForAce(playerCards)
     this.props.dealOneCard(deck, 'player')
-      .then(() => {
-        console.log('*** PLAYER ACE COUNT: ', playerAceCount)
-        const { playerValue } = this.props.hand
-        if (playerAceCount && playerValue > 21) {
-          this.props.makeAceOne('player')
-        }
-      })
       .then(() => {
         const { playerValue } = this.props.hand
         if (playerValue > 21) {
