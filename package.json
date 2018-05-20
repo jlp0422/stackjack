@@ -20,13 +20,174 @@
   },
   "dependencies": {
     "axios": "^0.18.0",
+    "curl": "^0.1.4",
     "expo": "^27.0.1",
+    "prompt-sync": "^4.1.6",
     "react": "16.3.1",
     "react-native": "~0.55.2",
+    "react-native-voice": "^0.2.6",
     "react-navigation": "^2.0.1",
     "react-redux": "^5.0.7",
     "redux": "^4.0.0",
     "redux-persist": "^5.9.1",
-    "redux-thunk": "^2.2.0"
-  }
+    "redux-thunk": "^2.2.0",
+    "watson-developer-cloud": "^3.4.2"
+  },
+  "intents": [
+    {
+      "intent": "Hit",
+      "examples": [
+        {
+          "text": "hit"
+        },
+        {
+          "text": "hit me"
+        }
+      ],
+      "description": ""
+    },
+    {
+      "intent": "Stand",
+      "examples": [
+        {
+          "text": "stand"
+        },
+        {
+          "text": "stay"
+        }
+      ],
+      "description": ""
+    },
+    {
+      "intent": "Hint",
+      "examples": [
+        {
+          "text": "hint"
+        },
+        {
+          "text": "help"
+        },
+        {
+          "text": "Help me"
+        }
+      ],
+      "description": ""
+    }
+  ],
+  "entities": [],
+  "language": "en",
+  "metadata": {
+    "api_version": {
+      "major_version": "v1",
+      "minor_version": "2017-05-26"
+    }
+  },
+  "description": "Stackathon",
+  "dialog_nodes": [
+    {
+      "type": "standard",
+      "title": "Hint",
+      "output": {
+        "text": {
+          "values": [
+            "Tap the hint button in the upper right hand corner for some help!"
+          ],
+          "selection_policy": "sequential"
+        }
+      },
+      "parent": null,
+      "context": null,
+      "metadata": {},
+      "next_step": null,
+      "conditions": "#Hint",
+      "description": null,
+      "dialog_node": "node_3_1526766284786",
+      "previous_sibling": "node_2_1526766206151"
+    },
+    {
+      "type": "standard",
+      "title": "Anything else",
+      "output": {
+        "text": {
+          "values": [
+            "I didn't understand. You can try rephrasing.",
+            "Can you reword your statement? I'm not understanding.",
+            "I didn't get your meaning."
+          ],
+          "selection_policy": "sequential"
+        }
+      },
+      "parent": null,
+      "context": null,
+      "metadata": {},
+      "next_step": null,
+      "conditions": "anything_else",
+      "description": null,
+      "dialog_node": "Anything else",
+      "previous_sibling": "node_3_1526766284786"
+    },
+    {
+      "type": "standard",
+      "title": "Hit",
+      "output": {
+        "text": {
+          "values": [
+            "One more card coming!"
+          ],
+          "selection_policy": "sequential"
+        }
+      },
+      "parent": null,
+      "context": null,
+      "metadata": {},
+      "next_step": null,
+      "conditions": "#Hit",
+      "description": null,
+      "dialog_node": "node_1_1526766181345",
+      "previous_sibling": "Welcome"
+    },
+    {
+      "type": "standard",
+      "title": "Stand",
+      "output": {
+        "text": {
+          "values": [
+            "All set here. Let's see what the dealer has"
+          ],
+          "selection_policy": "sequential"
+        }
+      },
+      "parent": null,
+      "context": null,
+      "metadata": {},
+      "next_step": null,
+      "conditions": "#Stand",
+      "description": null,
+      "dialog_node": "node_2_1526766206151",
+      "previous_sibling": "node_1_1526766181345"
+    },
+    {
+      "type": "standard",
+      "title": "Welcome",
+      "output": {
+        "text": {
+          "values": [
+            "Would you like to hit or stand?"
+          ],
+          "selection_policy": "sequential"
+        }
+      },
+      "parent": null,
+      "context": null,
+      "metadata": {},
+      "next_step": null,
+      "conditions": "welcome",
+      "description": null,
+      "dialog_node": "Welcome",
+      "previous_sibling": null
+    }
+  ],
+  "workspace_id": "9077b9ae-fa8b-4c8f-a3be-dad75ce37af2",
+  "counterexamples": [],
+  "learning_opt_out": false
 }

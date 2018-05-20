@@ -5,6 +5,8 @@ export const GET_NEW_HAND = 'GET_NEW_HAND';
 export const FLIP_DEALER_CARD = 'FLIP_DEALER_CARD';
 export const PLAYER_WIN = 'PLAYER_WIN';
 export const PLAYER_LOSE = 'PLAYER_LOSE';
+export const MAKE_PLAYER_ACE_ONE = 'MAKE_PLAYER_ACE_ONE';
+export const MAKE_DEALER_ACE_ONE = 'MAKE_DEALER_ACE_ONE';
 
 export const getCardValue = (value) => {
   // right now, only counts ACE as 11

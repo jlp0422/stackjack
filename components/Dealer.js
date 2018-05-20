@@ -3,7 +3,7 @@ import React from 'react';
 import { View, Text, StyleSheet, Image, Button, TextInput, TouchableWithoutFeedback } from 'react-native';
 import axios from 'axios';
 import { connect } from 'react-redux';
-import { dealOneCard, newDeck, newHand, flipCard, playerWin, playerLose } from '../store/HandReducer';
+import { dealOneCard, newDeck, newHand, flipCard, playerWin, playerLose, makeAceOne } from '../store/HandReducer';
 import { getCardValue } from '../store/actionConstants';
 const cardBack = require('../card-back.jpg')
 
@@ -24,6 +24,7 @@ class Dealer extends React.Component {
     this.onWagerChange = this.onWagerChange.bind(this)
     this.onPlayerWin = this.onPlayerWin.bind(this)
     this.onPlayerLose = this.onPlayerLose.bind(this)
+    this.onCheckForAce = this.onCheckForAce.bind(this)
   }
 
   componentWillMount() {
@@ -53,6 +54,13 @@ class Dealer extends React.Component {
     this.props.playerLose(wager)
   }
 
+  onCheckForAce(cards) {
+    return cards.reduce((memo, card) => {
+      if (card.value === 'ACE') memo++
+      return memo
+    }, 0)
+  }
+
   onNewDeck() {
     axios.get('https://deckofcardsapi.com/api/deck/new/shuffle/?deck_count=6')
     .then(res => res.data)
@@ -71,8 +79,14 @@ class Dealer extends React.Component {
       this.setState({ result: '' })
       this.props.newHand(deck)
         .then(() => {
-          const { playerValue, dealerValue, dealerHiddenCard } = this.props.hand
+          const { playerValue, dealerValue, dealerHiddenCard, playerCards, dealerCards } = this.props.hand
           const realDealerValue = dealerValue + getCardValue(dealerHiddenCard.value)
+          const playerAceCount = this.onCheckForAce(playerCards)
+          const dealerAceCount = this.onCheckForAce(dealerCards) + (dealerHiddenCard.value === 'ACE' ? 1 : 0)
+          console.log('*** PLAYER ACES: ', playerAceCount)
+          console.log('*** DEALER ACES: ', dealerAceCount)
+          if (playerAceCount === 2) this.props.makeAceOne('player')
+          if (dealerAceCount === 2) this.props.makeAceOne('dealer')
           if (playerValue === 21) {
             return setTimeout(() => {
               this.props.flipCard()
@@ -98,9 +112,14 @@ class Dealer extends React.Component {
   }
 
   onPlayerHit() {
-    const { playerCards, playerValue } = this.props.hand
+    const { playerCards } = this.props.hand
     const { deck, result } = this.state
+    const playerAceCount = this.onCheckForAce(playerCards)
     this.props.dealOneCard(deck, 'player')
+      .then(() => {
+        const { playerValue } = this.props.hand
+        if (playerAceCount && playerValue > 21) this.props.makeAceOne('player')
+      })
       .then(() => {
         const { playerValue } = this.props.hand
         if (playerValue > 21) {
@@ -171,8 +190,7 @@ class Dealer extends React.Component {
     const noPlayerCards = !playerCards.length
     const playerBust = playerValue > 21
     const noBet = playerCards.length > 1 && !result
-    console.log('bankroll: ', playerBankroll)
-    console.log('wager: ', wager)
+
     return (
       <View style={ styles.container }>
 
@@ -321,7 +339,8 @@ const mapDispatch = (dispatch) => {
     newHand: (deck) => dispatch(newHand(deck)),
     flipCard: () => dispatch(flipCard()),
     playerWin: (stake) => dispatch(playerWin(stake)),
-    playerLose: (stake) => dispatch(playerLose(stake))
+    playerLose: (stake) => dispatch(playerLose(stake)),
+    makeAceOne: (player) => dispatch(makeAceOne(player))
   }
 }
 
