@@ -82,9 +82,9 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#fff',
     alignItems: 'center',
-    justifyContent: 'center',
     paddingLeft: 25,
-    paddingRight: 25
+    paddingRight: 25,
+    paddingTop: 100
   },
   amount: {
     fontSize: 30,

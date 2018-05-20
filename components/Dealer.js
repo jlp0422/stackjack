@@ -121,21 +121,8 @@ class Dealer extends React.Component {
         .then(() => {
           const { playerValue, dealerValue, dealerHiddenCard, playerCards, dealerCards } = this.props.hand
           const realDealerValue = dealerValue + getCardValue(dealerHiddenCard.value)
-          let dealerAceCount = this.onCheckForAce(dealerCards, 'dealer') + (dealerHiddenCard.value === 'ACE' ? 1 : 0)
-          let playerAceCount = this.onCheckForAce(playerCards, 'player')
-
-          if (playerValue > 21 && playerAceCount && playerAceTracker[playerAceCount].checked && !playerAceTracker[playerAceCount].subtracted) {
-            this.props.makeAceOne('player')
-            playerAceTracker[playerAceCount].checked = true
-            playerAceTracker[playerAceCount].subtracted = true
-          }
-          if (realDealerValue > 21 && dealerAceCount && dealerAceTracker[dealerAceCount].checked && !dealerAceTracker[dealerAceCount].subtracted) {
-            console.log('*** DEALER TRACKER;', dealerAceTracker)
-            this.props.makeAceOne('dealer')
-            dealerAceTracker[dealerAceCount].checked = true
-            dealerAceTracker[dealerAceCount].subtracted = true
-          }
-
+          if (playerValue > 21) this.props.makeAceOne('player')
+          if (realDealerValue > 21) this.props.makeAceOne('dealer')
         })
         .then(() => {
           const { playerValue, dealerValue, dealerHiddenCard, playerCards, dealerCards } = this.props.hand
