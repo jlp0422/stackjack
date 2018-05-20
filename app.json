@@ -1,5 +1,10 @@
 {
   "expo": {
-    "sdkVersion": "27.0.0"
+    "sdkVersion": "27.0.0",
+    "name": "StackJack",
+    "slug": "stackjack",
+    "githubUrl": "https://github.com/jlp0422/stackjack",
+    "orientation": "portrait",
+    "privacy": "public"
   }
 }

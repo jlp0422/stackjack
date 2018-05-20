@@ -124,6 +124,9 @@ const handReducer = (state = initialState, action) => {
     case MAKE_PLAYER_ACE_ONE:
       return Object.assign({}, state, { playerValue: state.playerValue - 10 })
 
+    case MAKE_DEALER_ACE_ONE:
+      return Object.assign({}, state, { dealerValue: state.dealerValue - 10 })
+
     case ADD_FUNDS:
       return Object.assign({}, state, { playerBankroll: state.playerBankroll + action.amount })
   }

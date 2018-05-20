@@ -15,3 +15,7 @@ export const getCardValue = (cardValue) => {
   else if (cardValue === 'ACE') return 11
   else return 10
 }
+
+export const formatNumber = (num) => {
+  return num.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+}

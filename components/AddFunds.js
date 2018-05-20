@@ -3,8 +3,7 @@ import React from 'react';
 import { StyleSheet, Text, View, Button, TextInput, Alert, ActivityIndicator, Keyboard } from 'react-native';
 import { connect } from 'react-redux';
 import { addFundsToAccount } from '../store/HandReducer';
-
-// add input amount?
+import { formatNumber } from '../store/actionConstants';
 
 class AddFundsInfo extends React.Component {
   constructor() {
@@ -23,7 +22,7 @@ class AddFundsInfo extends React.Component {
     const { addFunds } = this.props
     Alert.alert(
       'Confirm deposit',
-      `$${amount} will be added to your bankroll`,
+      `$${ formatNumber(amount * 1) } will be added to your bankroll`,
       [
         {
           text: 'Cancel',

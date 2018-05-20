@@ -4,7 +4,7 @@ import { View, Text, StyleSheet, Image, Button, TextInput, TouchableWithoutFeedb
 import axios from 'axios';
 import { connect } from 'react-redux';
 import { dealOneCard, newDeck, newHand, flipCard, playerWin, playerLose, makeAceOne, addFundsToAccount } from '../store/HandReducer';
-import { getCardValue } from '../store/actionConstants';
+import { getCardValue, formatNumber } from '../store/actionConstants';
 const cardBack = require('../card-back.jpg')
 
 const playerAceTracker = {}
@@ -50,9 +50,10 @@ class Dealer extends React.Component {
   }
 
   addFundsPrompt() {
+    const { playerBankroll } = this.props.hand
     Alert.alert(
       'Add $25 to your bankroll?',
-      `You currently have $${this.props.hand.playerBankroll.toFixed(2)}`,
+      `You currently have $${ formatNumber(playerBankroll) }`,
       [
         { text: 'Cancel', onPress: () => null, style: 'cancel' },
         { text: 'Yes', onPress: () => this.props.addFunds(), style: 'default' },
@@ -128,7 +129,13 @@ class Dealer extends React.Component {
         .then(() => {
           const { playerValue, dealerValue, dealerHiddenCard, playerCards, dealerCards } = this.props.hand
           const realDealerValue = dealerValue + getCardValue(dealerHiddenCard.value)
-          if (playerValue === 21) {
+          if (playerValue === 21 && realDealerValue === 21 ) {
+            return setTimeout(() => {
+              this.props.flipCard()
+              this.setState({ result: `Push - play again!` })
+            }, 500)
+          }
+          else if (playerValue === 21) {
             return setTimeout(() => {
               this.props.flipCard()
               this.setState({ result: `You win with StackJack!` })
@@ -142,14 +149,22 @@ class Dealer extends React.Component {
               this.onPlayerLose()
             }, 500)
           }
-          else if (playerValue === 21 && realDealerValue === 21 ) {
-            return setTimeout(() => {
-              this.props.flipCard()
-              this.setState({ result: `Push - play again!` })
-            }, 500)
-          }
         })
       }
+  }
+
+  onDoubleDown() {
+    const { wager } = this.state
+    const { playerBankroll } = this.props.hand
+    if (wager * 2 > playerBankroll) return Alert.alert('Hold up', 'You dont have enough money to Double Down!')
+    else {
+      this.setState({ wager: wager * 2 })
+      this.setState({ doubledDown: true })
+      setTimeout(() => this.onPlayerHit(), 200)
+      setTimeout(() => {
+        if (!this.state.result) this.onPlayerStand()
+      }, 1000)
+    }
   }
 
   onPlayerHit() {
@@ -176,20 +191,6 @@ class Dealer extends React.Component {
       })
   }
 
-  onDoubleDown() {
-    const { wager } = this.state
-    const { playerBankroll } = this.props.hand
-    if (wager * 2 > playerBankroll) return Alert.alert('Hold up', 'You dont have enough money to Double Down!')
-    else {
-      this.setState({ wager: wager * 2 })
-      this.setState({ doubledDown: true })
-      setTimeout(() => this.onPlayerHit(), 200)
-      setTimeout(() => {
-        if (!this.state.result) this.onPlayerStand()
-      }, 1000)
-    }
-  }
-
   onPlayerStand() {
     this.props.flipCard()
     setTimeout(() => this.onCheckHands(), 750)
@@ -200,6 +201,15 @@ class Dealer extends React.Component {
     const { result, deck } = this.state
     if (dealerValue <= 16) {
       this.props.dealOneCard(deck, 'dealer')
+        .then(() => {
+          const { dealerValue, dealerCards } = this.props.hand
+          let dealerAceCount = this.onCheckForAce(dealerCards, 'player')
+          if (dealerValue > 21 && dealerAceCount && dealerAceTracker[dealerAceCount].checked && !dealerAceTracker[dealerAceCount].subtracted) {
+            this.props.makeAceOne('dealer')
+            dealerAceTracker[dealerAceCount].checked = true
+            dealerAceTracker[dealerAceCount].subtracted = true
+          }
+        })
         .then(() => setTimeout(() => this.onCheckHands(), 750))
     }
     else if (dealerValue > 21) {
@@ -331,7 +341,7 @@ class Dealer extends React.Component {
             </View>
           </TouchableWithoutFeedback>
         </View>
-        <Text style={ styles.headline2 }>My Bankroll: ${playerBankroll.toFixed(2)}</Text>
+        <Text style={ styles.headline2 }>My Bankroll: ${ formatNumber(playerBankroll) }</Text>
         <Button onPress={ addFundsPrompt } title="Add $25" disabled={ playerBankroll > 5 }/>
       </View>
     )
