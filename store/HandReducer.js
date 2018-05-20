@@ -67,7 +67,7 @@ const initialState = {
   playerCards: [],
   playerValue: 0,
   playerStand: false,
-  playerBankroll: 0
+  playerBankroll: 25
 }
 
 const handReducer = (state = initialState, action) => {

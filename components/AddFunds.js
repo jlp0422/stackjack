@@ -4,6 +4,8 @@ import { StyleSheet, Text, View, Button } from 'react-native';
 import { connect } from 'react-redux';
 import { addFundsToAccount } from '../store/HandReducer';
 
+// add input amount?
+
 const AddFundsInfo = ({ addFunds, playerBankroll, goBack }) => {
   return (
     <View style={styles.hint}>
