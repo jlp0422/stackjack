@@ -103,7 +103,7 @@ class HomeScreen extends React.Component {
       <View style={ styles.launch }>
         <StatusBar barStyle='light-content' />
         <Text style={ styles.title }>Welcome to StackJack!</Text>
-        <Button title="Let's play!" onPress={() => this.props.navigation.navigate('Game')}></Button>
+        <Button title="Start new game" onPress={() => this.props.navigation.navigate('Game')}></Button>
       </View>
     )
   }

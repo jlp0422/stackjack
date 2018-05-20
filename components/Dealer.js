@@ -7,13 +7,17 @@ import { dealOneCard, newDeck, newHand, flipCard, playerWin, playerLose, makeAce
 import { getCardValue } from '../store/actionConstants';
 const cardBack = require('../card-back.jpg')
 
+const playerAceTracker = {}
+const dealerAceTracker = {}
+
 class Dealer extends React.Component {
   constructor(props) {
     super(props)
     this.state = {
       deck: '',
       result: '',
-      wager: 0
+      wager: 0,
+      doubledDown: false
     }
     this.onStartHand = this.onStartHand.bind(this)
     this.onNewDeck = this.onNewDeck.bind(this)
@@ -58,21 +62,43 @@ class Dealer extends React.Component {
   }
 
   onPlayerWin() {
-    const { wager } = this.state
+    const { wager, doubledDown } = this.state
     this.props.playerWin(wager)
+    if (doubledDown) this.setState({ doubledDown: false, wager: wager / 2 })
   }
 
   onPlayerLose() {
-    const { wager } = this.state
+    const { wager, doubledDown } = this.state
     this.props.playerLose(wager)
+    if (doubledDown) this.setState({ doubledDown: false, wager: wager / 2 })
   }
 
-  onCheckForAce(cards) {
-    return cards.reduce((memo, card) => {
+  onCheckForAce(cards, player) {
+    if (player === 'player') {
+      const playerAceCount = cards.reduce((memo, card) => {
+        if (card.value === 'ACE') memo++
+        return memo
+      }, 0)
+      if (playerAceCount && !playerAceTracker[playerAceCount]) playerAceTracker[playerAceCount] = { checked: true }
+      else if (playerAceCount) {
+        playerAceTracker[playerAceCount].checked = true
+        playerAceTracker[playerAceCount].subtracted = true
+      }
+      return playerAceCount
+    }
+  else {
+    const dealerAceCount = cards.reduce((memo, card) => {
       if (card.value === 'ACE') memo++
       return memo
     }, 0)
+    if (dealerAceCount && !dealerAceTracker[dealerAceCount]) dealerAceTracker[dealerAceCount] = { checked: true }
+    else if (dealerAceCount) {
+      dealerAceTracker[dealerAceCount].checked = true
+      dealerAceTracker[dealerAceCount].subtracted = true
+    }
+    return dealerAceCount
   }
+}
 
   onNewDeck() {
     axios.get('https://deckofcardsapi.com/api/deck/new/shuffle/?deck_count=6')
@@ -87,6 +113,7 @@ class Dealer extends React.Component {
   onStartHand() {
     const { deck, wager } = this.state
     const { playerBankroll } = this.props.hand
+    playerAceTracker = {}
     if (wager > playerBankroll) return Alert.alert('Hold up', `You can't fund that bet!`)
     else {
       this.setState({ result: '' })
@@ -94,48 +121,75 @@ class Dealer extends React.Component {
         .then(() => {
           const { playerValue, dealerValue, dealerHiddenCard, playerCards, dealerCards } = this.props.hand
           const realDealerValue = dealerValue + getCardValue(dealerHiddenCard.value)
-          // const playerAceCount = this.onCheckForAce(playerCards)
-          // const dealerAceCount = this.onCheckForAce(dealerCards) + (dealerHiddenCard.value === 'ACE' ? 1 : 0)
-          // console.log('*** PLAYER ACES: ', playerAceCount)
-          // console.log('*** DEALER ACES: ', dealerAceCount)
-          // if (playerAceCount === 2) this.props.makeAceOne('player')
-          // if (dealerAceCount === 2) this.props.makeAceOne('dealer')
+          let dealerAceCount = this.onCheckForAce(dealerCards, 'dealer') + (dealerHiddenCard.value === 'ACE' ? 1 : 0)
+          let playerAceCount = this.onCheckForAce(playerCards, 'player')
+
+          if (playerValue > 21 && playerAceCount && playerAceTracker[playerAceCount].checked && !playerAceTracker[playerAceCount].subtracted) {
+            this.props.makeAceOne('player')
+            playerAceTracker[playerAceCount].checked = true
+            playerAceTracker[playerAceCount].subtracted = true
+          }
+          if (realDealerValue > 21 && dealerAceCount && dealerAceTracker[dealerAceCount].checked && !dealerAceTracker[dealerAceCount].subtracted) {
+            console.log('*** DEALER TRACKER;', dealerAceTracker)
+            this.props.makeAceOne('dealer')
+            dealerAceTracker[dealerAceCount].checked = true
+            dealerAceTracker[dealerAceCount].subtracted = true
+          }
+
+        })
+        .then(() => {
+          const { playerValue, dealerValue, dealerHiddenCard, playerCards, dealerCards } = this.props.hand
+          const realDealerValue = dealerValue + getCardValue(dealerHiddenCard.value)
           if (playerValue === 21) {
             return setTimeout(() => {
               this.props.flipCard()
               this.setState({ result: `You win with StackJack!` })
               this.onPlayerWin()
-            }, 1000)
+            }, 500)
           }
           else if (realDealerValue === 21) {
             return setTimeout(() => {
               this.props.flipCard()
               this.setState({ result: `Dealer has StackJack` })
               this.onPlayerLose()
-            }, 1000)
+            }, 500)
           }
           else if (playerValue === 21 && realDealerValue === 21 ) {
             return setTimeout(() => {
               this.props.flipCard()
               this.setState({ result: `Push - play again!` })
-            }, 1000)
+            }, 500)
           }
         })
       }
   }
 
   onPlayerHit() {
-    const { playerCards } = this.props.hand
-    const { deck, result } = this.state
-    let playerAceCount = this.onCheckForAce(playerCards)
+    const { deck } = this.state
     this.props.dealOneCard(deck, 'player')
       .then(() => {
-        const { playerValue } = this.props.hand
-        if (playerValue > 21) {
-          this.props.flipCard()
-          this.setState({ result: 'You busted! Dealer wins.' })
-          this.onPlayerLose()
+        const { playerValue, playerCards } = this.props.hand
+        let playerAceCount = this.onCheckForAce(playerCards, 'player')
+        console.log('**** PLAYER ACE COUNT: ', playerAceCount)
+        console.log('**** PLAYER ACE TRACKER BEFORE: ', playerAceTracker)
+        // console.log('*** PLAYER VALUE BEFORE ACE CHECKED: ', playerValue)
+        if (playerValue > 21 && playerAceCount && playerAceTracker[playerAceCount].checked && !playerAceTracker[playerAceCount].subtracted) {
+          // console.log('ACE HAS BEEN MADE ONE')
+          this.props.makeAceOne('player')
+          playerAceTracker[playerAceCount].checked = true
+          playerAceTracker[playerAceCount].subtracted = true
+          console.log('**** PLAYER ACE TRACKER AFTERS SUBTRACTION: ', playerAceTracker)
         }
+      })
+      .then(() => {
+        const { playerValue } = this.props.hand
+        setTimeout(() => {
+            if (playerValue > 21) {
+            this.props.flipCard()
+            this.setState({ result: 'You busted! Dealer wins.' })
+            this.onPlayerLose()
+          }
+        }, 500)
       })
   }
 
@@ -145,6 +199,7 @@ class Dealer extends React.Component {
     if (wager * 2 > playerBankroll) return Alert.alert('Hold up', 'You dont have enough money to Double Down!')
     else {
       this.setState({ wager: wager * 2 })
+      this.setState({ doubledDown: true })
       setTimeout(() => this.onPlayerHit(), 200)
       setTimeout(() => {
         if (!this.state.result) this.onPlayerStand()
@@ -154,7 +209,7 @@ class Dealer extends React.Component {
 
   onPlayerStand() {
     this.props.flipCard()
-    setTimeout(() => this.onCheckHands(), 1000)
+    setTimeout(() => this.onCheckHands(), 750)
   }
 
   onCheckHands(double) {
@@ -162,7 +217,7 @@ class Dealer extends React.Component {
     const { result, deck } = this.state
     if (dealerValue <= 16) {
       this.props.dealOneCard(deck, 'dealer')
-        .then(() => setTimeout(() => this.onCheckHands(), 500))
+        .then(() => setTimeout(() => this.onCheckHands(), 750))
     }
     else if (dealerValue > 21) {
       return setTimeout(() => {
@@ -246,7 +301,7 @@ class Dealer extends React.Component {
         <View style={ styles.inline }>
           <Button onPress={ onPlayerHit } disabled={ noPlayerCards || playerBust || !!result } title="Hit" />
           <Button onPress={ onPlayerStand } disabled={ noPlayerCards || playerBust || !!result } title="Stand" />
-          <Button onPress={ onDoubleDown } disabled={ noPlayerCards || playerBust || !!result } title="Double Down" />
+          <Button onPress={ onDoubleDown } disabled={ noPlayerCards || playerBust || !!result || playerCards.length > 2 } title="Double Down" />
         </View>
         <View style={ styles.inline }>
           <Text style={ styles.headline1 }>Wager:</Text>
@@ -317,7 +372,7 @@ const styles = StyleSheet.create({
     paddingBottom: 10
   },
   playerBust: {
-    fontSize: 30,
+    fontSize: 25,
     fontWeight: 'bold',
     color: 'red',
     paddingBottom: 10,
