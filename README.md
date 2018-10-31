@@ -1,5 +1,5 @@
 # Stackathon Project for Fullstack Academy
-### Video Recording: https://www.youtube.com/watch?v=yXxq2u9RvEY
+### [Video Recording](https://www.youtube.com/watch?v=yXxq2u9RvEY)
 
 ---
 
